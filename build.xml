@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--	************************************************************
+	Ant 1.6 (or later) Project Build File for: ODF
+	Constructed with AntBuilder 1.7 (22-Dec-2011)
+	See http://ringlord.com/products/antbuilder/
+	************************************************************ -->
+<project name="ODF" default="compile" basedir=".">
+	<property name="build-dir" value=".build"/>
+	<property name="src-dir"   value="src"/>
+	<property name="jdoc-path" value="jdoc"/>
+	<property name="archive"   value="odf.jar"/>
+	<property name="tar-file"  value="odf.tar"/>
+
+	<target name="all" depends="clean,jar,docs" description="Cleans project and then builds the odf.jar and the JavaDocs"/>
+
+	<target name="clean" description="Removes files that are rebuilt during compilation">
+		<delete dir="${build-dir}" verbose="false" quiet="true"/>
+		<delete file=".manifest" verbose="false" quiet="true"/>
+	</target>
+
+	<target name="cleanall" depends="clean" description="Cleans GNU/Emacs backup files, too">
+		<delete dir="${jdoc-path}" verbose="false" quiet="true"/>
+		<delete><!-- cleanup gnuemacs backup files -->
+			<fileset dir="." defaultexcludes="false">
+				<include name="*~"/>
+			</fileset>
+			<fileset dir="${src-dir}" defaultexcludes="false">
+				<include name="*~"/>
+				<include name="**/*~"/>
+			</fileset>
+		</delete>
+		<delete file="${archive}" verbose="false" quiet="true"/>
+		<delete file="${tar-file}" verbose="false" quiet="true"/>
+		<delete file="${archive}.md5" verbose="false" quiet="true"/>
+		<delete file="${archive}.sha1" verbose="false" quiet="true"/>
+	</target>
+
+	<target name="jar4" description="Builds the odf.jar for Java 1.4">
+		<property name="target" value="1.4"/>
+		<antcall target="jar"/>
+	</target>
+
+	<target name="jar5" description="Builds the odf.jar for Java 1.5">
+		<property name="target" value="1.5"/>
+		<property name="rt_jar" value="/usr/lib/jvm/java-1.5.0-gcj/jre/lib/rt.jar"/>
+		<antcall target="jar"/>
+	</target>
+
+	<target name="jar6" description="Builds the odf.jar for Java 1.6">
+		<property name="target" value="1.6"/>
+		<property name="rt_jar" value="/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/rt.jar"/>
+		<antcall target="jar"/>
+	</target>
+
+	<target name="jar7" description="Builds the odf.jar for Java 1.7">
+		<property name="target" value="1.7"/>
+		<property name="rt_jar" value="/usr/lib/jvm/jdk1.7.0_02/jre/lib/rt.jar"/>
+		<antcall target="jar"/>
+	</target>
+
+	<target name="jar8" description="Builds the odf.jar for Java 1.8">
+		<property name="target" value="1.8"/>
+		<antcall target="jar"/>
+	</target>
+
+	<target name="compile" description="Compiles the project into .build/">
+		<property name="target" value="1.7"/>
+		<property name="rt_jar" value="/usr/lib/jvm/jdk1.7.0_02/jre/lib/rt.jar"/>
+		<echo message="Compiling for Java ${target} with runtime ${rt_jar}"/>
+		<mkdir  dir="${build-dir}"/>
+		<javac  srcdir="${src-dir}"
+			destdir="${build-dir}"
+			source="1.7"
+			target="${target}"
+			bootclasspath="${rt_jar}"
+			deprecation="true"
+			includeantruntime="false"
+			debug="true">
+			<compilerarg value="-Xlint:all,-path,-serial"/>
+		</javac>
+	</target>
+
+	<target name="jar" depends="clean,compile" description="Constructs the odf.jar file">
+		<tstamp>
+			<format property="TODAY" pattern="yyyy-MMM-dd HH:mm:ss Z"/>
+		</tstamp>
+		<manifest file=".manifest" mode="update">
+			<attribute name="Main-Class" value="com.ringlord.odf.Show"/>
+			<attribute name="Implementation-Title" value="ODF"/>
+			<attribute name="Implementation-Version" value="1.0 (${TODAY})"/>
+		</manifest>
+		<jar    jarfile="${archive}"
+			manifest=".manifest"
+			whenempty="fail"
+			index="false"><!-- index='false' allows external JARs to be found -->
+			<fileset dir="${build-dir}" includes="**/*.class"/>
+			<fileset dir="." includes="LICENSE.TXT"/>
+			<fileset dir="." includes="${src-dir}/**/*.java"/>
+			<fileset dir="." includes="build.xml"/>
+		</jar>
+		<chmod perm="+x" type="file" file="${archive}"/>
+		<checksum
+			file="${archive}"
+			pattern="{0} *{1}"
+			algorithm="MD5"
+			fileext=".md5"
+			forceOverwrite="yes"/>
+		<checksum
+			file="${archive}"
+			pattern="{0} *{1}"
+			algorithm="SHA1"
+			fileext=".sha1"
+			forceOverwrite="yes"/>
+	</target>
+
+	<target name="dist" depends="clean,jar" description="Builds a distribution in odf.tar.gz INCLUDING source code">
+		<tar    tarfile="${tar-file}.gz"
+			longfile="gnu"
+			compression="gzip">
+			<tarfileset	dir="."
+					prefix="odf"
+					mode="750"
+					dirmode="750"
+					username="${user.name}"
+					group="odf">
+				<include name="${archive}"/>
+				<include name="odf"/>
+				<include name="odf.bat"/>
+			</tarfileset>
+			<tarfileset	dir="."
+					prefix="odf"
+					mode="640"
+					dirmode="750"
+					username="${user.name}"
+					group="odf">
+				<include name="README.text"/>
+				<include name="*.od?"/>
+				<include name="*.pdf"/>
+				<include name="build.xml"/>
+				<include name="${src-dir}/*.java"/>
+				<include name="${src-dir}/**/*.java"/>
+			</tarfileset>
+		</tar>
+	</target>
+
+	<target name="docs" description="Builds the JavaDoc in jdoc/">
+		<delete dir="${jdoc-path}" verbose="false" quiet="true"/>
+		<mkdir  dir="${jdoc-path}"/>
+		<javadoc        sourcepath="${src-dir}"
+				destdir="${jdoc-path}"
+				private="true"
+				author="true"
+				version="true"
+				use="true"
+				splitindex="false"
+				breakiterator="true"
+				doctitle="Documentation for 'ODF'"
+				overview="package.html"
+				windowtitle="ODF">
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+			<fileset dir="${src-dir}">
+				<include name="*.java"/>
+				<include name="**/*.java"/>
+			</fileset>
+		</javadoc>
+	</target>
+
+	<target name="gitlog" description="Generate the ChangeLog file from git's repository">
+		<git    command="log" output=".git-output"/>
+		<move   file=".git-output" tofile="ChangeLog"/>
+		<fixcrlf srcdir="." includes="ChangeLog" eol="crlf" eof="remove"/>
+		<echo   message="Created file 'ChangeLog'"/>
+	</target>
+	<macrodef name="git">
+		<attribute name="command"/>
+		<attribute name="dir" default=""/>
+		<attribute name="output" default=".git-output"/>
+		<element name="args" optional="true"/>
+		<sequential>
+			<echo message="git @{command}"/>
+			<exec executable="git" dir="@{dir}" output="@{output}">
+				<arg value="@{command}"/>
+				<arg value="-M"/>
+				<arg value="--name-status"/>
+				<arg value="--graph"/>
+				<arg value="--full-history"/>
+				<args/>
+			</exec>
+		</sequential>
+	</macrodef>
+</project>
