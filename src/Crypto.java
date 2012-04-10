@@ -57,15 +57,6 @@ public class Crypto
   {
     super();
 
-    /*
-    System.err.println( "--------------------------------------------------" );
-    System.err.println( "e="+encryptionData );
-    System.err.println( "a="+algorithmData );
-    System.err.println( "k="+keyDerivationData );
-    System.err.println( "p="+startKeyGenerationData );
-    System.err.println( "--------------------------------------------------" );
-    */
-
     this.checksumType  = encryptionData.get( "manifest:checksum-type" );
     this.checksum      = toByteArray( encryptionData.get("manifest:checksum") );
 
@@ -177,20 +168,6 @@ public class Crypto
     this.keyAlgorithm = (slashPos < 0
                          ? algorithmID
                          : algorithmID.substring(0,slashPos));
-
-    System.err.println( "---------------------------------------------" );
-    System.err.println( "ChecksumType   = "+checksumType );
-    System.err.println( "Checksum.len   = "+checksum.length );
-    System.err.println( "KeyAlgorithm   = "+algorithmName );
-    System.err.println( "KeyAlgorithmID = "+algorithmID+"  ==>  "+keyAlgorithm );
-    System.err.println( "InitVector.len = "+initVector.length );
-    System.err.println( "KeyDerivation  = "+keyDerivName );
-    System.err.println( "KeyDerivationID= "+keyDerivationID );
-    System.err.println( "KeyDerivSize   = "+keyDerivSize );
-    System.err.println( "KeyDerivIter   = "+keyDerivIter );
-    System.err.println( "Salt.len       = "+salt.length );
-    System.err.println( "StartKeyGen    = "+startKeyGen );
-    System.err.println( "StartKeySize   = "+startKeySize );
   }
 
   /**
