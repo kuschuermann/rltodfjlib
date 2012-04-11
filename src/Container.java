@@ -25,47 +25,70 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
+ * <p>Represents an OASIS Open Document Format (ODF) Container, which
+ * is, in essence, a Zip File containing a "META-INF/manifest.xml"
+ * file with a particular structure that references the rest of the
+ * file's contents, and also describes cryptographical information
+ * required to decode the container's encrypted components.</p>
+ *
+ * <p>You should always {@link #close()} the Container when you are
+ * finished with it.</p>
+ *
+ * <p>Two constructors are available, on accepting a {@link File}
+ * object, the other takes an {@link InputStream}. Please note that as
+ * of Java 1.7 the Java {@link java.util.zip.ZipInputStream} is
+ * <em>unable to parse Zip files with entries that are not DEFLATED,
+ * but have EXT blocks</em>. This makes the direct use of
+ * ZipInputStream unreliable at best, wherefore <em>this class
+ * persists an InputStream to a temporary file, and then processes
+ * this as a local File.</em> The temporary file is cleaned up when
+ * the Container is closed or the JVM exits properly.</p>
+ *
+ * <pre>
+ * Container odf = new Container( new File("test.odt") );
+ * for( Entry item : odf )
+ * {
+ *   System.err.println( "\t" + item );
+ * }
+ * final Entry body = odf.get( "content.xml" );
+ * if( body != null )
+ *   {
+ *     System.err.println( "Found the 'content.xml' entry" );
+ *     final byte[] data = (e.isEncrypted()
+ *                          ? e.data("test") // "test" is the password
+ *                          : e.data());
+ *     System.err.println( "Here is the XML:\n" + new String(data) );
+ *   }
+ * odf.close();
+ * </pre>
+ *
  * @author K. Udo Schuermann
  **/
 public class Container
   implements Iterable<Entry>
 {
-  public static void main( final String[] args )
-    throws Exception
-  {
-    for( String name : args )
-      {
-        final File file = new File(name);
-        try
-          {
-            System.err.print( "Opening "+file );
-            final Container odf = new Container(file);
-            System.err.println();
-            int entryCount = 0;
-            for( Entry e : odf )
-              {
-                System.err.println( "\t"+e );
-                ++entryCount;
-              }
-            System.err.println( "\tTotal: "+entryCount+" entries" );
-
-            final Entry e = odf.get( "content.xml" );
-            if( e != null )
-              {
-                System.err.println( "Found the 'content.xml' entry" );
-                final byte[] data = (e.isEncrypted()
-                                     ? e.data("test")
-                                     : e.data());
-                System.err.println( "Got data:\n"+new String(data) );
-              }
-          }
-        catch( IOException x )
-          {
-            x.printStackTrace();
-          }
-      }
-  }
-
+  /**
+   * <p>Processes the File as an ODF container.</p>
+   *
+   * <p>Resources are not released until the {@link linkplain #close()
+   * container is closed}.
+   *
+   * @param file The OASIS Open Document Format (ODF) container (this
+   * is actually a Zip file).
+   *
+   * @throws IOException An error occurred accessing or reading the
+   * given file.
+   *
+   * @throws parserConfigurationException The XML Parser could not be
+   * configured in order to parse the ODF "META-INF/manifest.xml"
+   * (manifest) file.
+   *
+   * @throws SAXException The SAX Parser failed to process the ODF
+   * manifest.
+   *
+   * @throws SAXParseException The SAX Parser failed to parse the ODF
+   * manifest.
+   **/
   public Container( final File file )
     throws IOException,
            ParserConfigurationException,
@@ -80,20 +103,35 @@ public class Container
         init();
       }
     this.isTemporaryContainer = false;
-
   }
+
   /**
-   * Processes the InputStream as an ODF container. Due to a bug in
-   * the Java library's ZipInputStream (it cannot handle EXT blocks in
-   * a non-DEFLATED entry) the given InputStream is persisted to a
+   * <p>Processes the InputStream as an ODF container.</p>
+   *
+   * <p>Please note that due to a bug in the Java library's {@link
+   * java.util.zip.ZipInputStream} (it cannot handle EXT blocks in a
+   * non-DEFLATED entry) the given InputStream is first persisted to a
    * temporary file, which is then processed as if the ODF container
    * had been given as a {@linkplain #Container(File) local file}. The
    * temporary file is deleted when the {@linkplain #close() container
-   * is closed} or the JVM exits in a proper manner.
+   * is closed} or the JVM exits in a proper manner.</p>
    *
    * @param f The InputStream to be processed
    *
    * @see #Container(File)
+   *
+   * @throws IOException An error occurred accessing or reading the
+   * given file.
+   *
+   * @throws parserConfigurationException The XML Parser could not be
+   * configured in order to parse the ODF "META-INF/manifest.xml"
+   * (manifest) file.
+   *
+   * @throws SAXException The SAX Parser failed to process the ODF
+   * manifest.
+   *
+   * @throws SAXParseException The SAX Parser failed to parse the ODF
+   * manifest.
    **/
   public Container( final InputStream f )
     throws IOException,
@@ -123,10 +161,25 @@ public class Container
     init();
   }
 
+  /**
+   * <p>Obtain the Container's associated {@link File}.</p>
+   *
+   * @return The associated File; When the Container was {@linkplain
+   * #Container(InputStream) constructed from an InputStream}, the
+   * associated temporary File is returned. Please note that this
+   * temporary file will be removed when the Container is closed or
+   * the JVM exits properly.
+   **/
   public File file()
   {
     return file;
   }
+
+  /*
+    // UNIMPLEMENTED / UNTESTED FUNCTIONALITY
+    //
+    // DISABLED TO REDUCED THE CHANCE THAT YOU BUY A GUN AND KILL
+    // YOURSELF AFTER SCREWING THINGS UP BEYOND ALL RECOVERY ;-)
 
   public void save()
   {
@@ -139,30 +192,74 @@ public class Container
         throw new IllegalStateException( "Cannot save to a null file" );
       }
   }
+  */
 
   /**
-   * Produces an Iterator over the Container's Entries; the Iterator
-   * is <em>not backed by the Container</em>, meaning that it is safe
-   * to loop over the Iterator and call {@link #remove(Entry)}.
+   * <p>Implements the functionality that allows you to iterate over
+   * the Container's {@linkplain Entry entries}. The Iterator is
+   * <em>not backed by the Container</em>, meaning that it is actually
+   * safe to loop over the Iterator and call {@link
+   * #remove(Entry)}.</p>
+   *
+   * <pre>
+   * Container odf = new Container( new File("test.odt") );
+   * for( Entry e : odf )
+   *   {
+   *     if( e.name().equals("deleteme.txt") )
+   *       {
+   *         odf.remove( e ); // this is safe! :)
+   *       }
+   *   }
+   * </pre>
    **/
   public Iterator<Entry> iterator()
   {
     return manifest.iterator();
   }
 
+  /**
+   * <p>Adds a new {@link Entry} to the Container.</p>
+   *
+   * @param entry The entry to be added. The entry must not be null.
+   * Entries are keyed by their name (upper/lower case is significant)
+   * so that an entry will replace one with the exact same name.
+   **/
   public void add( final Entry entry )
   {
     manifest.add( entry );
   }
+  /**
+   * <p>Removes an {@link Entry} from the Container.</p>
+   *
+   * @param entry The entry to be removed. The entry must not be null,
+   * but it is not an error if the entry is not actually a member of
+   * the container.
+   *
+   * @return 'true' if the entry was actually removed, 'false' if it
+   * was not a member (and as not removed).
+   **/
   public boolean remove( Entry entry )
   {
     return manifest.remove( entry );
   }
+  /**
+   * <p>Obtain the {@link Entry} with the exact name given.</p>
+   *
+   * @return 'null' if the named Entry could not be found.
+   **/
   public Entry get( final String name )
   {
     return manifest.get( name );
   }
 
+  /**
+   * <p>Close the Container and release all associated resources.</p>
+   *
+   * <p>Note that if the Container was constructed from an {@link
+   * InputStream} it is important to call this method to ensure that
+   * the temporary file (which can consume significant disk resources)
+   * is properly closed and removed.</p>
+   **/
   public void close()
     throws IOException
   {
@@ -183,6 +280,16 @@ public class Container
       }
   }
 
+  /**
+   * <p>Begins parsing the OASIS Open Document Format (ODF)
+   * container's manifest ("META-INF/manifest.xml") file, building the
+   * internal representation and reference associations for the various
+   * components of the container.</p>
+   *
+   * <p>This method is called by each constructor to prepare the
+   * Container for general operations. All XML parsing happens within
+   * the context of this method.</p>
+   **/
   private void init()
     throws IOException,
            ParserConfigurationException,
