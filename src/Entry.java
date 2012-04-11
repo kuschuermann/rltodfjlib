@@ -14,6 +14,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.Inflater;
 
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.InvalidAlgorithmParameterException;
@@ -26,8 +27,9 @@ import javax.crypto.BadPaddingException;
 import com.ringlord.crypto.Crypto;
 
 /**
- * A single file component in an OASIS Open Document File container.
- * The Entry is immutable.
+ * A single (file) component of an OASIS Open Document Format (ODF)
+ * container. The Entry is intended to be immutable. It carries with
+ * it cryptographic information.
  *
  * @author K Udo Schuermann
  **/
@@ -35,35 +37,63 @@ public class Entry
 {
   /**
    * Create a new Entry.
+   *
+   * @param name The name of the Entry. Within any single {@link
+   * Container} this name must be unique.
+   *
+   * @param crypto Optional cryptographical informatino about the
+   * Entry. This value is null if the entry is not encrypted, and
+   * carries cryptrographical information if the entry is encrypted.
+   *
+   * @param container A reference to the {@link Container} to which
+   * this Entry belongs. This must not be null.
    **/
   public Entry( final String name,
                 final Crypto crypto,
-                final Map<String,Map<String,String>> attribs,
-                final ZipFile container )
+                final ZipFile container,
+                final Map<String,String> attribs )
   {
     super();
     this.name = name;
     this.crypto = crypto;
-    this.attribs = attribs;
     this.container = container;
+    this.attribs = attribs;
   }
 
-  public Map<String,String> attribs( final String category )
-  {
-    return attribs.get( category );
-  }
-  public Map<String,Map<String,String>> attribs()
+  /**
+   * <p>Obtains the map of key/value pairs associated with a
+   * particular XML entry (such as "manifest:encryption-data" or
+   * "manifest:start-key-generation").</p>
+   *
+   * @param category The (case-sensitive) name of the associated XML
+   * element, like "manifest:encryption-data" or "manifest:algorithm".
+   *
+   * @return A {@link Map} of key/value pairs representing the
+   * elements from the manifest associated with the given category
+   * (XML element).
+   **/
+  public Map<String,String> attribs()
   {
     return attribs;
   }
 
+  /**
+   * The (unique and case-sensitive) name of this entry. It cannot be
+   * modified.
+   **/
   public String name()
   {
     return name;
   }
 
   /**
-   * <strong>Do not modify the contents of the return value!</strong>
+   * <p>The data associated with an <em>{@link #isEncrypted()
+   * unencrypted} Entry}.</p>
+   *
+   * @return The Entry's data, or null if the entry's data could not
+   * be retrieved.
+   *
+   * @see #data(String)
    **/
   public byte[] data()
     throws IOException,
@@ -74,10 +104,40 @@ public class Entry
            InvalidKeySpecException,
            NoSuchAlgorithmException
   {
-    return data( null );
+    // If we have cryptographical info then we called the wrong method!
+    if( crypto != null )
+      {
+        throw new IllegalArgumentException( "Cannot decrypt without key/password" );
+      }
+
+    final byte[] raw = getRaw();
+    if( raw == null )
+      {
+        return null;
+      }
+
+    try
+      {
+        return inflate( raw );
+      }
+    catch( Exception x )
+      {
+        return raw;
+      }
   }
 
   /**
+   * <p>The data associated with an {@link Entry}; whether the entry
+   * is expected to be encrypted or unencrypted is determined by the
+   * parameter.</p>
+   *
+   * @param password 'null' if the entry is to be treated as
+   * unencrypted data; non-null for the password to be used to decrypt
+   * encrypted data.
+   *
+   * @return The entry's data (decrypted if the correct password was
+   * supplied).
+   *
    * @throws IllegalArgumentException The password has not decrypted
    *         the data successfully (wrong password)
    **/
@@ -89,6 +149,79 @@ public class Entry
            BadPaddingException,
            InvalidKeySpecException,
            NoSuchAlgorithmException
+  {
+    if( password == null )
+      {
+        return data();
+      }
+
+    if( crypto == null )
+      {
+        System.err.println( "Unencrypted entry does not require a password!" );
+      }
+
+    final byte[] plain = crypto.decrypt( getRaw(), password );
+    try
+      {
+        return inflate( plain );
+      }
+    catch( IOException x )
+      {
+        return plain;
+      }
+  }
+
+  /**
+   * <p>The data associated with an {@link Entry}; whether the entry
+   * is expected to be encrypted or unencrypted is determined by the
+   * parameter.</p>
+   *
+   * @param key 'null' if the entry is to be treated as unencrypted
+   * data; non-null for the cryptographic key to be used to decrypt
+   * encrypted data.
+   *
+   * @return The entry's data (decrypted if the correct password was
+   * supplied).
+   *
+   * @throws IllegalArgumentException The given key has not decrypted
+   *         the data successfully (wrong password)
+   **/
+  public byte[] data( final Key key )
+    throws IOException,
+           InvalidKeyException,
+           InvalidAlgorithmParameterException,
+           IllegalBlockSizeException,
+           BadPaddingException,
+           InvalidKeySpecException,
+           NoSuchAlgorithmException
+  {
+    if( key == null )
+      {
+        return data();
+      }
+
+    if( crypto == null )
+      {
+        System.err.println( "Unencrypted entry does not require a Key!" );
+      }
+
+    final byte[] plain = crypto.decrypt( getRaw(), key );
+    try
+      {
+        return inflate( plain );
+      }
+    catch( IOException x )
+      {
+        return plain;
+      }
+  }
+
+  /**
+   * Obtains the raw data from the Entry completely ignoring the
+   * possibility that the data may be encrypted.
+   **/
+  private byte[] getRaw()
+    throws IOException
   {
     final ZipEntry e = container.getEntry( name );
     if( e == null )
@@ -112,28 +245,12 @@ public class Entry
         in.close();
       }
 
-    final byte[] raw = out.toByteArray();
-
-    // If we have no crypt then 'raw' is the data we want
-    if( crypto == null )
-      {
-        if( password != null )
-          {
-            System.err.println( "Unencrypted entry does not require a password!" );
-          }
-
-        return inflate(raw);
-      }
-
-    // If we have a password to go along with the encryption, then
-    // apply it
-    if( password != null )
-      {
-        return inflate( crypto.decrypt(raw,password) );
-      }
-    throw new IllegalArgumentException( "Cannot decrypt without password" );
+    return out.toByteArray();
   }
 
+  /**
+   * Attempts to inflate deflated (compressed) data.
+   **/
   private byte[] inflate( final byte[] data )
     throws IOException
   {
@@ -156,7 +273,9 @@ public class Entry
   }
 
   /**
-   * Determine whether the data is encrypted.
+   * Determine whether the data is encrypted. The determination is
+   * based on the null/non-null status of the 'crypto' parameter given
+   * to the constructor.
    *
    * @return 'true' if the data is encrypted, and the Entry's contents
    * must be retrieved with {@link #data(String)}, otherwise the data
@@ -178,6 +297,11 @@ public class Entry
     return crypto;
   }
 
+  /**
+   * A simplistic text representation of this Entry consisting
+   * primarily of the name and a flag that indicates whether it is
+   * encrypted.
+   **/
   public String toString()
   {
     final StringBuilder sb = new StringBuilder();
@@ -192,6 +316,6 @@ public class Entry
 
   private final String name;
   private final Crypto crypto;
-  private final Map<String,Map<String,String>> attribs;
   private final ZipFile container;
+  private final Map<String,String> attribs;
 }

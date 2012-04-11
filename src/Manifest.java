@@ -30,6 +30,12 @@ import com.ringlord.mime.Base64;
 
 import com.ringlord.crypto.Crypto;
 
+/**
+ * <p>Supports parsing and maintains a mapping of the resulting named
+ * {@linkplain Entry entries} comprising the {@link Container}.</p>
+ *
+ * @author K. Udo Schuermann
+ **/
 class Manifest
   extends DefaultHandler
   implements Iterable<Entry>
@@ -199,18 +205,18 @@ class Manifest
 
         final Map<String,String> fAttr = info.get( "manifest:file-entry" );
         final String name = fAttr.get("manifest:full-path");
-        entries.put( name, new Entry( name,
-                                      crypto,
-                                      info,
-                                      container) );
+        entries.put( name, new Entry(name,
+                                     crypto,
+                                     container,
+                                     fAttr) );
       }
     else if( qName.equals("manifest:manifest") )
       {
         entries.put( "META-INF/manifest.xml",
                      new Entry("META-INF/manifest.xml",
                                null,
-                               null,
-                               container) );
+                               container,
+                               null) );
       }
   }
 
