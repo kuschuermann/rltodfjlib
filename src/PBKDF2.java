@@ -9,6 +9,27 @@ import java.security.InvalidKeyException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+// ======================================================================
+// This file is part of the Ringlord Technologies Java ODF Library,
+// providing access to the contents OASIS ODF container, including
+// encrypted contents.
+//
+// Copyright (C) 2012 K. Udo Schuermann
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// ======================================================================
+
 /**
  * <p>Implements the "PBKDF2WithHmacSHA1" algorithm accoding to
  * RFC&nbsp;2898.</p>
@@ -83,15 +104,15 @@ public class PBKDF2
     final SecretKeySpec keyspec = new SecretKeySpec( password, "HmacSHA1" );
     final Mac prf = Mac.getInstance( "HmacSHA1" );
     prf.init( keyspec );
-    
+
     // Note: hLen, dkLen, l, r, T, F, etc. are horrible names for
     //       variables and functions in this day and age, but they
     //       reflect the terse symbols used in RFC 2898 to describe
     //       the PBKDF2 algorithm:
 
-    final int hLen = prf.getMacLength();	// this will be 20 for SHA1
-    final int l = ceil( dkLen, hLen);		// this will be 1 for 128bit (16-byte) keys
-    final int r = dkLen - (l-1)*hLen;		// this will be 16 for 128bit (16-byte) keys
+    final int hLen = prf.getMacLength();        // this will be 20 for SHA1
+    final int l = ceil( dkLen, hLen);           // this will be 1 for 128bit (16-byte) keys
+    final int r = dkLen - (l-1)*hLen;           // this will be 16 for 128bit (16-byte) keys
 
     final byte T[] = new byte[l * hLen];
     int ti_offset = 0;
@@ -112,7 +133,7 @@ public class PBKDF2
 
   /**
    * Integer division with ceiling function.
-   * 
+   *
    * @param a Divisor
    *
    * @param b Denominator
@@ -142,12 +163,12 @@ public class PBKDF2
   {
     final int hLen = prf.getMacLength();
     byte U_r[] = new byte[ hLen ];
-    
+
     // U0 = S || INT (i);
     byte U_i[] = new byte[S.length + 4];
     System.arraycopy( S, 0, U_i, 0, S.length );
     INT( U_i, S.length, blockIndex );
-    
+
     for( int i = 0; i < c; i++ )
       {
         U_i = prf.doFinal( U_i );
@@ -159,7 +180,7 @@ public class PBKDF2
     /**
      * Block-Xor. Xor source bytes into destination byte buffer. Destination
      * buffer must be same length or less than source buffer.
-     * 
+     *
      * @param dest
      * @param src
      */
@@ -174,7 +195,7 @@ public class PBKDF2
 
   /**
    * Four-octet encoding of the integer i, most significant octet first.
-   * 
+   *
    * @see <a href="http://tools.ietf.org/html/rfc2898">RFC 2898 5.2 Step 3.</a>
    * @param dest
    * @param offset

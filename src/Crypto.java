@@ -27,6 +27,27 @@ import java.util.Map;
 
 import com.ringlord.mime.Base64;
 
+// ======================================================================
+// This file is part of the Ringlord Technologies Java ODF Library,
+// providing access to the contents OASIS ODF container, including
+// encrypted contents.
+//
+// Copyright (C) 2012 K. Udo Schuermann
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// ======================================================================
+
 /**
  * <p>Encrypt/decrypt data using a password. Although this class is
  * intended to be flexible, it is presently limited to use the PBKDF2

@@ -1,5 +1,26 @@
 package com.ringlord.mime;
 
+// ======================================================================
+// This file is part of the Ringlord Technologies Java ODF Library,
+// providing access to the contents OASIS ODF container, including
+// encrypted contents.
+//
+// Copyright (C) 2012 K. Udo Schuermann
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// ======================================================================
+
 /**
  * Provides static methods for converting binary (byte[]) data into a
  * BASE-64 encoded byte[] array, and vice versa. Output generated will
@@ -28,13 +49,13 @@ final public class Base64
   {
     if( args.length == 0 )
       {
-	System.out.println( "Provide a string to encode/decode" );
+        System.out.println( "Provide a string to encode/decode" );
       }
     else
       {
-	System.out.println( "Original = "+args[0] );
-	System.out.println( "Encoded  = "+new String( encode( args[0].getBytes() ) ) );
-	System.out.println( "Decoded  = "+new String( decode( args[0].getBytes() ) ) );
+        System.out.println( "Original = "+args[0] );
+        System.out.println( "Encoded  = "+new String( encode( args[0].getBytes() ) ) );
+        System.out.println( "Decoded  = "+new String( decode( args[0].getBytes() ) ) );
       }
   }
 
@@ -63,30 +84,30 @@ final public class Base64
     // for every given 3.
     for( int iPos=0,oPos=0; iPos<original.length; iPos+=3,oPos+=4 )
       {
-	boolean have3=false, have4=false;
-	// Now extract up to 3 bytes from the original input
-	int data = (original[iPos] & 0xff) << 16;
-	if( (iPos+1) < original.length )	// do we have any more?
-	  {
-	    data |= (original[iPos+1] & 0xff) << 8;
-	    have3 = true;
-	  }
-	if( (iPos+2) < original.length )
-	  {
-	    data |= original[iPos+2] & 0xff;
-	    have4 = true;
-	  }
+        boolean have3=false, have4=false;
+        // Now extract up to 3 bytes from the original input
+        int data = (original[iPos] & 0xff) << 16;
+        if( (iPos+1) < original.length )        // do we have any more?
+          {
+            data |= (original[iPos+1] & 0xff) << 8;
+            have3 = true;
+          }
+        if( (iPos+2) < original.length )
+          {
+            data |= original[iPos+2] & 0xff;
+            have4 = true;
+          }
 
-	result[ oPos+3 ] = sixtyFour[ (have4 ? (data & 0x3f) : 64) ];
-	data >>= 6;
+        result[ oPos+3 ] = sixtyFour[ (have4 ? (data & 0x3f) : 64) ];
+        data >>= 6;
 
-	result[ oPos+2 ] = sixtyFour[ (have3 ? (data & 0x3f) : 64) ];
-	data >>= 6;
+        result[ oPos+2 ] = sixtyFour[ (have3 ? (data & 0x3f) : 64) ];
+        data >>= 6;
 
-	result[ oPos+1 ] = sixtyFour[ (data & 0x3f) ];
-	data >>= 6;
+        result[ oPos+1 ] = sixtyFour[ (data & 0x3f) ];
+        data >>= 6;
 
-	result[ oPos   ] = sixtyFour[ (data & 0x3f) ];
+        result[ oPos   ] = sixtyFour[ (data & 0x3f) ];
       }
     return result;
   }
@@ -116,40 +137,40 @@ final public class Base64
     int usableBytes = base64.length;
     for( int i=0; i<base64.length; i++ )
       {
-	int test = binaryValue[ base64[i] ];
-	if( test < 0 )
-	  {
-	    usableBytes--;
-	  }
+        int test = binaryValue[ base64[i] ];
+        if( test < 0 )
+          {
+            usableBytes--;
+          }
       }
     int actualLen = ((usableBytes+3) / 4) * 3;
     if( (usableBytes > 1) && (base64[base64.length-2] == '=') )
       {
-	actualLen -= 2;
+        actualLen -= 2;
       }
     else if( (usableBytes > 0) && (base64[base64.length-1] == '=') )
       {
-	actualLen--;
+        actualLen--;
       }
 
     byte[] result = new byte[ actualLen ];
     int oPos=0,bucket=0,available=0;
     for( int i=0; i<base64.length; i++ )
       {
-	int data = binaryValue[ base64[i] ];
-	if( data >= 0 )
-	  {
-	    bucket = (bucket << 6) | data;
-	    if( available >= 2 )	// plus the 6 we just added is at least 8
-	      {
-		available -= 2;
-		result[ oPos++ ] = (byte)((bucket >> available) & 0xff);
-	      }
-	    else
-	      {
-		available += 6;	// just added 6 bits
-	      }
-	  }
+        int data = binaryValue[ base64[i] ];
+        if( data >= 0 )
+          {
+            bucket = (bucket << 6) | data;
+            if( available >= 2 )        // plus the 6 we just added is at least 8
+              {
+                available -= 2;
+                result[ oPos++ ] = (byte)((bucket >> available) & 0xff);
+              }
+            else
+              {
+                available += 6; // just added 6 bits
+              }
+          }
       }
     return result;
   }
