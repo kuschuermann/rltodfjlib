@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.Enumeration;
 
 import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
 
 import java.security.NoSuchAlgorithmException;
 
@@ -32,8 +34,8 @@ import com.ringlord.crypto.Crypto;
 
 // ======================================================================
 // This file is part of the Ringlord Technologies Java ODF Library,
-// providing access to the contents OASIS ODF container, including
-// encrypted contents.
+// which provides access to the contents of OASIS ODF containers,
+// including encrypted contents.
 //
 // Copyright (C) 2012 K. Udo Schuermann
 //
@@ -86,6 +88,18 @@ class Manifest
     final InputSource s = new InputSource( f );
 
     p.parse( s, this );
+
+    final Enumeration<? extends ZipEntry> allEntries = container.entries();
+    while( allEntries.hasMoreElements() )
+      {
+        final ZipEntry ze = allEntries.nextElement();
+        final String name = ze.getName();
+        final Entry e = entries.get( name );
+        if( e == null )
+          {
+            entries.put( name, new Entry(name,null,container) );
+          }
+      }
   }
 
   public Entry get( final String name )
@@ -225,16 +239,14 @@ class Manifest
         final String name = fAttr.get("manifest:full-path");
         entries.put( name, new Entry(name,
                                      crypto,
-                                     container,
-                                     fAttr) );
+                                     container) );
       }
     else if( qName.equals("manifest:manifest") )
       {
         entries.put( "META-INF/manifest.xml",
                      new Entry("META-INF/manifest.xml",
                                null,
-                               container,
-                               null) );
+                               container) );
       }
   }
 

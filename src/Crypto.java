@@ -29,8 +29,8 @@ import com.ringlord.mime.Base64;
 
 // ======================================================================
 // This file is part of the Ringlord Technologies Java ODF Library,
-// providing access to the contents OASIS ODF container, including
-// encrypted contents.
+// which provides access to the contents of OASIS ODF containers,
+// including encrypted contents.
 //
 // Copyright (C) 2012 K. Udo Schuermann
 //
@@ -157,7 +157,7 @@ public class Crypto
     if( startKeyGenerationData == null )
       {
         this.startKeyGen   = "SHA1";
-        this.startKeySize  = 16;
+        this.startKeySize  = 20;
       }
     else
       {

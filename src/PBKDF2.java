@@ -11,8 +11,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 // ======================================================================
 // This file is part of the Ringlord Technologies Java ODF Library,
-// providing access to the contents OASIS ODF container, including
-// encrypted contents.
+// which provides access to the contents of OASIS ODF containers,
+// including encrypted contents.
 //
 // Copyright (C) 2012 K. Udo Schuermann
 //
@@ -40,17 +40,17 @@ import javax.crypto.spec.SecretKeySpec;
  * char[].</p>
  *
  * <p>This implementation was, in fact, developed specifically to deal
- * with encrypted (password protected) OpenOffice.org documents which
- * do not merely provide a password to the PBKDF2 algorithm, but an
- * SHA1-hash thereof, necessitating an implementation of PBKDF2 that
- * accepts arbitrary binary data.</p>
+ * with encrypted (password protected) OASIS Open Document Format
+ * files whose encryption does not begin with passing a password to
+ * the PBKDF2 algorithm, but an SHA1-hash thereof, necessitating an
+ * implementation of PBKDF2 that accepts binary data.</p>
  *
  * <p>I would like to offer my thanks to the following people for
  * their various input, all of which in combination not merely
- * encouraged me to continue seeking for a solution to this problem
- * but led me on a path of discovery about cryptography that resulted
- * ultimately in the following details about OpenOffice.org use of
- * passwords and cryptography:</p>
+ * encouraged me to continue seeking a solution to this problem, but
+ * led me on a path of discovery into the complex field cryptography
+ * that resulted ultimately in the creation of the Ringlord
+ * Technologies ODF Java Library of which this code is a part:</p>
  *
  * <ol>
  * <li>Steven Elliot, whose lucid description as well as scripts and
@@ -68,26 +68,33 @@ import javax.crypto.spec.SecretKeySpec;
  *     therefore terribly bad, even dangerous) "solutions".
  * </ol>
  *
- * <p>Now, OpenOffice.org protects documents using passwords as
+ * <p>Now, OASIS Open Document Files are protected using passwords as
  * follows:</p>
  *
  * <ol>
- * <li>User-entered passwords are run through SHA1 to produce a 160
- * bit (20 byte) value; The (binary) password is then turned via
- * PBKDF2 algorithm into a secret key: As Steven Elliot remarks, it
- * the first step is rather redundant as PBKDF2 performs SHA1 on the
- * password 1024 times (in the case of OpenOffice.org's use of
- * PBKDF2) but that's what we have to work with;
- * <li>The (XML) document is compressed (see RFC&nbsp;1950,
+
+ * <li>User-entered passwords are run through SHA1 or SHA256 to
+ * produce a 160 bit (20 byte) or 256 bit (32 byte) value; The
+ * (binary) password is then turned via PBKDF2 algorithm into a secret
+ * key: As Steven Elliot remarks, the first step is rather redundant
+ * as PBKDF2 performs SHA1/SHA256 on the password 1024 times (in the
+ * case of OpenOffice.org's use of PBKDF2) but a digest algorithm is
+ * also a convenient way to map arbitrarily long passwords to the
+ * digest-sized data that PBKDF2 begins with (in other words, there
+ * actually is a method to the madness!)
+
+ * <li>The (XML) document is compressed/deflated (see RFC&nbsp;1950,
  * RFC&nbsp;1951, and RFC&nbsp;1952), the 10-byte header (magic
  * number, version number, and timestampe) as well as the 8-byte
  * footer (CRC-32 checksum and original file's size) are stripped
- * away; the resulting body is then encrypted using the
- * "Blowfish/CFB/NoPadding" cipher, combined with a randomly generated
- * initialization vector.
+ * away; the resulting body is then encrypted using the 128-bit
+ * "Blowfish/CFB/NoPadding" or 256-bit "AES/CBC/NoPadding" cipher,
+ * combined with a randomly generated initialization vector.
+
  * <li>The CRC-32, salt, initialization vector, iteration count
- * (1024), and cipher (Blowfish/CFB), are all described in the
- * document's meta-data (the manifest).
+ * (1024), and cipher (Blowfish/CFB or AES/CBC), are all described in
+ * the document's meta-data (the manifest).
+
  * </ol>
  *
  * @see <a href="http://rtner.de/software/PBKDF2.html">rtner.de/software/PBKDF2.html</a>

@@ -1,9 +1,9 @@
 package com.ringlord.mime;
 
 // ======================================================================
-// This file is part of the Ringlord Technologies Java ODF Library,
-// providing access to the contents OASIS ODF container, including
-// encrypted contents.
+// This file is distributed as part of the Ringlord Technologies Java
+// ODF Library, which provides access to the contents of OASIS ODF
+// containers, including encrypted contents.
 //
 // Copyright (C) 2012 K. Udo Schuermann
 //
@@ -39,7 +39,7 @@ package com.ringlord.mime;
  * me in TURBO Pascal around 1987 or 1988 (the early dawn of Ringlord
  * Technologies :-)
  *
- * @author Udo K. Schuermann (walrus@ringlord.com)
+ * @author Udo K. Schuermann (udo@ringlord.com)
  *
  * @version 2.1 (10-Feb-2001)
  **/

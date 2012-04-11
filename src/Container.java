@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Enumeration;
 
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
@@ -26,8 +27,8 @@ import org.xml.sax.SAXParseException;
 
 // ======================================================================
 // This file is part of the Ringlord Technologies Java ODF Library,
-// providing access to the contents OASIS ODF container, including
-// encrypted contents.
+// which provides access to the contents of OASIS ODF containers,
+// including encrypted contents.
 //
 // Copyright (C) 2012 K. Udo Schuermann
 //
@@ -67,20 +68,29 @@ import org.xml.sax.SAXParseException;
  *
  * <pre>
  * Container odf = new Container( new File("test.odt") );
- * for( Entry item : odf )
- * {
- *   System.err.println( "\t" + item );
- * }
- * final Entry body = odf.get( "content.xml" );
- * if( body != null )
+ * try
  *   {
- *     System.err.println( "Found the 'content.xml' entry" );
- *     final byte[] data = (e.isEncrypted()
- *                          ? e.data("test") // "test" is the password
- *                          : e.data());
- *     System.err.println( "Here is the XML:\n" + new String(data) );
+ *     for( Entry item : odf )
+ *       {
+ *         System.err.println( "\t" + item );
+ *       }
+ *     final Entry body = odf.get( "content.xml" );
+ *     if( body != null )
+ *       {
+ *         System.err.println( "Found the 'content.xml' entry" );
+ *         final byte[] data = (e.isEncrypted()
+ *                              ? e.data("test") // "test" is the password
+ *                              : e.data());
+ *         if( data != null ) // it's a file, not a directory?
+ *           {
+ *             System.err.println( "Here is the XML:\n" + new String(data) );
+ *           }
+ *       }
  *   }
- * odf.close();
+ * finally
+ *   {
+ *     odf.close();
+ *   }
  * </pre>
  *
  * @author K. Udo Schuermann

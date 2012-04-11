@@ -28,8 +28,8 @@ import com.ringlord.crypto.Crypto;
 
 // ======================================================================
 // This file is part of the Ringlord Technologies Java ODF Library,
-// providing access to the contents OASIS ODF container, including
-// encrypted contents.
+// which provides access to the contents of OASIS ODF containers,
+// including encrypted contents.
 //
 // Copyright (C) 2012 K. Udo Schuermann
 //
@@ -60,42 +60,24 @@ public class Entry
    * Create a new Entry.
    *
    * @param name The name of the Entry. Within any single {@link
-   * Container} this name must be unique.
+   * Container} this name must be unique. It must be the same by which
+   * the item is recorded in the associated {@link ZipFile}.
    *
-   * @param crypto Optional cryptographical informatino about the
-   * Entry. This value is null if the entry is not encrypted, and
-   * carries cryptrographical information if the entry is encrypted.
+   * @param crypto Optional cryptographical information about the
+   * Entry. If the Entry is encrypted this must be non-null; an
+   * unencrypted entry must indicate that with a null here.
    *
-   * @param container A reference to the {@link Container} to which
-   * this Entry belongs. This must not be null.
+   * @param container A reference to the {@link ZipFile} from which
+   * the Entry's actual data will be extracted. This must not be null.
    **/
   public Entry( final String name,
                 final Crypto crypto,
-                final ZipFile container,
-                final Map<String,String> attribs )
+                final ZipFile container )
   {
     super();
     this.name = name;
     this.crypto = crypto;
     this.container = container;
-    this.attribs = attribs;
-  }
-
-  /**
-   * <p>Obtains the map of key/value pairs associated with a
-   * particular XML entry (such as "manifest:encryption-data" or
-   * "manifest:start-key-generation").</p>
-   *
-   * @param category The (case-sensitive) name of the associated XML
-   * element, like "manifest:encryption-data" or "manifest:algorithm".
-   *
-   * @return A {@link Map} of key/value pairs representing the
-   * elements from the manifest associated with the given category
-   * (XML element).
-   **/
-  public Map<String,String> attribs()
-  {
-    return attribs;
   }
 
   /**
@@ -112,7 +94,7 @@ public class Entry
    * unencrypted} Entry}.</p>
    *
    * @return The Entry's data, or null if the entry's data could not
-   * be retrieved.
+   * be retrieved (example: Directories have no associated data)
    *
    * @see #data(String)
    **/
@@ -131,7 +113,7 @@ public class Entry
         throw new IllegalArgumentException( "Cannot decrypt without key/password" );
       }
 
-    final byte[] raw = getRaw();
+    final byte[] raw = raw();
     if( raw == null )
       {
         return null;
@@ -153,11 +135,13 @@ public class Entry
    * parameter.</p>
    *
    * @param password 'null' if the entry is to be treated as
-   * unencrypted data; non-null for the password to be used to decrypt
-   * encrypted data.
+   * unencrypted data (in which case you should really call {@link
+   * #data()}, instead); non-null for the password to be used to
+   * decrypt encrypted data.
    *
    * @return The entry's data (decrypted if the correct password was
-   * supplied).
+   * supplied) or null if the associated data could not be retrieved
+   * (example: Directories have no associated data).
    *
    * @throws IllegalArgumentException The password has not decrypted
    *         the data successfully (wrong password)
@@ -181,7 +165,7 @@ public class Entry
         System.err.println( "Unencrypted entry does not require a password!" );
       }
 
-    final byte[] plain = crypto.decrypt( getRaw(), password );
+    final byte[] plain = crypto.decrypt( raw(), password );
     try
       {
         return inflate( plain );
@@ -226,7 +210,7 @@ public class Entry
         System.err.println( "Unencrypted entry does not require a Key!" );
       }
 
-    final byte[] plain = crypto.decrypt( getRaw(), key );
+    final byte[] plain = crypto.decrypt( raw(), key );
     try
       {
         return inflate( plain );
@@ -238,10 +222,15 @@ public class Entry
   }
 
   /**
-   * Obtains the raw data from the Entry completely ignoring the
-   * possibility that the data may be encrypted.
+   * <p>Obtains the raw and compressed data from the Entry completely
+   * ignoring the possibility that it may be encrypted. Generally you
+   * will want to call {@link #data()} or {@link #data(String)} to
+   * access the data in its intended (plain text) form.</p>
+   *
+   * @param The raw data from the entry, still encrypted if it is an
+   * encrypted entry, and still deflated if it was compressed.
    **/
-  private byte[] getRaw()
+  public byte[] raw()
     throws IOException
   {
     final ZipEntry e = container.getEntry( name );
@@ -272,7 +261,7 @@ public class Entry
   /**
    * Attempts to inflate deflated (compressed) data.
    **/
-  private byte[] inflate( final byte[] data )
+  public static byte[] inflate( final byte[] data )
     throws IOException
   {
     final ByteArrayInputStream iStream = new ByteArrayInputStream( data );
@@ -338,5 +327,4 @@ public class Entry
   private final String name;
   private final Crypto crypto;
   private final ZipFile container;
-  private final Map<String,String> attribs;
 }
