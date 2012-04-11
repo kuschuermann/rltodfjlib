@@ -129,18 +129,15 @@ class Manifest
                         attribs.getValue(i) );
       }
 
-    if( type == null )
+    if( ! isODF )
       {
         if( qName.equals("manifest:manifest") )
           {
             final String manifestType = attributes.get( "xmlns:manifest" );
-            if( "http://openoffice.org/2001/manifest".equals(manifestType) )
+            if( "http://openoffice.org/2001/manifest".equals(manifestType) ||
+                "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0".equals(manifestType) )
               {
-                type = Type.OOo;
-              }
-            else if( "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0".equals(manifestType) )
-              {
-                type = Type.ODF;
+                isODF = true;
               }
             else
               {
@@ -246,14 +243,8 @@ class Manifest
     return entries.toString();
   }
 
-  private enum Type
-  {
-    OOo,        // StarOffice/OpenOffice.org v1
-    ODF;        // OASIS OpenDocumentFormat
-  }
-
-  private Type type;
   private ZipFile container;
+  private boolean isODF;
   //
   private Map<String,Map<String,String>> info;
   //
