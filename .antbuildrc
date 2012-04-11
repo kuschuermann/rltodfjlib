@@ -1,0 +1,33 @@
+# This file stores the choices you made in AntBuilder.
+# It simplifies rebuilding Ant's build.xml file if you
+# wish to adjust your choices at a later time but it's
+# not critical to keep around if you really don't want
+# to keep it; be careful of modifying it by hand.
+
+project-name=ODF
+project-is-war=false
+executable-file=odf
+main-class=com.ringlord.odf.Show
+default-source-version=1.7
+default-java-version=1.7
+repackage-libs=false
+include-lib=false
+include-img=false
+include-src=true
+include-etc=false
+checksum-executable=true
+git-support=true
+svn-support=false
+create-skeleton=false
+sign-executable=false
+sign-libraries=false
+sign-main-jar=false
+sign-properties-file=
+jaxb-support=false
+path-src=src
+path-lib=lib
+path-img=img
+path-etc=etc
+path-build=.build
+
+#eof
