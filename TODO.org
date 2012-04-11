@@ -1,0 +1,9 @@
+* TODO Test un-encrypted data extraction for ODF 1.0/1.1
+* TODO Test un-encrypted data extraction for ODF 1.2
+* TODO Test un-encrypted data extraction for OO.o
+* TODO Test encrypted data extraction for OO.o
+* TODO Add CLI interface to extract contents of an ODF (decrypt & unzip)
+* TODO Ensure that the GPL3 preamble is in all sources
+* TODO Official name: "Ringlord Technologies ODF Java Library"
+* TODO Complete/polish in-source (JavaDoc) documentation
+* TODO Publish!
