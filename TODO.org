@@ -17,3 +17,9 @@
 * TODO Official name: "Ringlord Technologies ODF Java Library"
 * TODO Complete/polish in-source (JavaDoc) documentation
 * TODO Publish!
+  Q: Would it make sense to put this on GitHub?
+  A: Yes, probably!
+ 
+  Would need to research how to manage such projects, add
+  contributors, and maybe even hand over the project to someone else
+  in the future.

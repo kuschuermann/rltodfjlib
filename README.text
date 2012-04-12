@@ -28,9 +28,10 @@ LICENSE
 USE CASES
 
 	You could use this library to test archives, extract & convert
-        the text into another format, search for things, transform the
-        encryption used from one algorithm to another, or simply learn
-        about cryptography and concepts.
+        the text into another format, provide a simple viewer for ODF
+        content, search for things, transform the encryption used from
+        one algorithm to another, or simply read the source code and
+        learn a little about cryptography and related concepts.
 
 BUILDING FROM SOURCE
 
