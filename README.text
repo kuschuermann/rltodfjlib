@@ -1,0 +1,62 @@
+======================================================================
+			      Ringlord Technologies ODF Java Library
+			      Copyright (C) 2012 Ringlord Technologies
+			      Copyright (C) 2012 K. Udo Schuermann
+			      All rights reserved
+======================================================================
+
+INTRODUCTION
+
+	The Ringlord Technologies ODF Java Library provides access to
+        the contents of OASIS Open Document File containers such as
+        supported by LibreOffice, OpenOffice.org, KOffice, AbiWord,
+        Google Docs, Scribus, Microsoft Office, etc.
+
+        Specifically, cryptographically secured files can be extracted
+        using the correct password.
+
+LICENSE
+
+	The Ringlord Technologies ODF Java Library is licensed under
+        the GNU General Public License v3 (or later at your option).
+
+        For the license text see the LICENSE.TXT file in the odf.jar
+        archive (treat the archive as a zip file for that purpose),
+        run the software with a -L option ("java -jar odf.jar -L"),
+        or visit http://www.gnu.org/licenses/
+
+USE CASES
+
+	You could use this library to test archives, extract & convert
+        the text into another format, search for things, transform the
+        encryption used from one algorithm to another, or simply learn
+        about cryptography and concepts.
+
+BUILDING FROM SOURCE
+
+        The command "ant jar" should do it. If that fails, here is
+        what you need to know:
+
+        The source code is essentially compatible with Java 1.5 but a
+        minor dependency on Console in the Test class (which could be
+        fixed by commenting out some parts) pushes the minimum version
+        to Java 1.6.
+
+        Also required (for easy rebuilding) is Apache Ant 1.7 but an
+        earlier version of Ant may also work; you could also rebuild
+        the software using "javac -d .build src/*.java" and then use
+        jar to build an appropriate jar file from a manifest file and
+        the contents of the .build/ directory. Essentially, these
+        three commands are all you really need to build it:
+
+        	mkdir .build
+        	javac -d .build src/*.java
+                jar cfe odf.jar Test -C .build/ . \
+                                     -C . src/*.java \
+                                     README.text LICENSE.TXT build.xml
+                
+        The included "build.xml" script builds for Java 1.7 by default
+        but you can force compilation with Java 1.6 by using a command
+        like "ant jar6"
+
+#eot

@@ -1,7 +1,16 @@
+* TODO Test encrypted AES --- fails on SOME files!?!
+  All are fine except "Configurations2/accelerator/current.xml" &
+  "manifest.rdf", which fail their checksum (could it be that the
+  checksum is actually bad?)
+
+  Other documents tend to work just fine, so this is either a
+  glitch in my document (bad encryption in an earlier version of
+  LibreOffice?) or I'm missing something in my algorithm
 * TODO Test un-encrypted data extraction for ODF 1.0/1.1
 * TODO Test un-encrypted data extraction for ODF 1.2
 * TODO Test un-encrypted data extraction for OO.o
 * TODO Test encrypted data extraction for OO.o
+* TODO Re-encrypt AES encrypted document using Blowfish, instead
 * TODO Add CLI interface to extract contents of an ODF (decrypt & unzip)
 * TODO Ensure that the GPL3 preamble is in all sources
 * TODO Official name: "Ringlord Technologies ODF Java Library"

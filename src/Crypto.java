@@ -420,26 +420,12 @@ public class Crypto
         if( "SHA1/1K".equals(checksumType) )
           {
             digest = MessageDigest.getInstance( "SHA1" );
-            if( result.length < 1024 )
-              {
-                digest.update( result );
-              }
-            else
-              {
-                digest.update( result, 0, 1024 );
-              }
+            digest.update( result, 0, Math.min(1024,result.length) );
           }
         else if( "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k".equals(checksumType) )
           {
             digest = MessageDigest.getInstance( "SHA-256" );
-            if( result.length < 1024 )
-              {
-                digest.update( result );
-              }
-            else
-              {
-                digest.update( result, 0, 1024 );
-              }
+            digest.update( result, 0, Math.min(1024,result.length) );
           }
         else
           {
@@ -458,6 +444,20 @@ public class Crypto
       }
 
     return result;
+  }
+
+  private void showInfo()
+  {
+    System.err.println( "\tchecksumType   = "+checksumType );
+    System.err.println( "\tchecksum.len   = "+checksum.length );
+    System.err.println( "\talgorithm      = "+algorithmName );
+    System.err.println( "\tinitVector.len = "+initVector.length );
+    System.err.println( "\tkeyDrivation   = "+keyDerivName );
+    System.err.println( "\tkeyDerivSize   = "+keyDerivSize );
+    System.err.println( "\tkeyDerivIter   = "+keyDerivIter );
+    System.err.println( "\tsalt.len       = "+salt.length );
+    System.err.println( "\tkeyStart       = "+startKeyGen );
+    System.err.println( "\tkeyStartSize   = "+startKeySize );
   }
 
   /**

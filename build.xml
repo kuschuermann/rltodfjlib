@@ -70,7 +70,7 @@
 		<mkdir  dir="${build-dir}"/>
 		<javac  srcdir="${src-dir}"
 			destdir="${build-dir}"
-			source="1.7"
+			source="1.6"
 			target="${target}"
 			bootclasspath="${rt_jar}"
 			deprecation="true"
@@ -85,7 +85,7 @@
 			<format property="TODAY" pattern="yyyy-MMM-dd HH:mm:ss Z"/>
 		</tstamp>
 		<manifest file=".manifest" mode="update">
-			<attribute name="Main-Class" value="com.ringlord.odf.Show"/>
+			<attribute name="Main-Class" value="Test"/>
 			<attribute name="Implementation-Title" value="ODF"/>
 			<attribute name="Implementation-Version" value="1.0 (${TODAY})"/>
 		</manifest>
@@ -95,6 +95,7 @@
 			index="false"><!-- index='false' allows external JARs to be found -->
 			<fileset dir="${build-dir}" includes="**/*.class"/>
 			<fileset dir="." includes="LICENSE.TXT"/>
+                        <fileset dir="." includes="README.text"/>
 			<fileset dir="." includes="${src-dir}/**/*.java"/>
 			<fileset dir="." includes="build.xml"/>
 		</jar>

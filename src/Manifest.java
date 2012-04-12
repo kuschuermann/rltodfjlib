@@ -226,7 +226,14 @@ class Manifest
               {
                 crypto = new Crypto( cAttr, kAttr, aAttr, pAttr );
               }
-            catch( NoSuchAlgorithmException | NoSuchPaddingException x )
+            catch( NoSuchAlgorithmException x )
+              {
+                final IllegalStateException boom =
+                  new IllegalStateException( "Unsupported crypto" );
+                boom.initCause( x );
+                throw boom;
+              }
+            catch( NoSuchPaddingException x )
               {
                 final IllegalStateException boom =
                   new IllegalStateException( "Unsupported crypto" );
