@@ -12,6 +12,7 @@
 * TODO Test encrypted data extraction for OO.o
 * TODO Re-encrypt AES encrypted document using Blowfish, instead
 * TODO Add CLI interface to extract contents of an ODF (decrypt & unzip)
+  Begun but not complete.
 * TODO Ensure that the GPL3 preamble is in all sources
 * TODO Official name: "Ringlord Technologies ODF Java Library"
 * TODO Complete/polish in-source (JavaDoc) documentation

@@ -101,7 +101,7 @@ public class Container
   /**
    * <p>Processes the File as an ODF container.</p>
    *
-   * <p>Resources are not released until the {@link linkplain #close()
+   * <p>Resources are not released until the {@linkplain #close()
    * container is closed}.
    *
    * @param file The OASIS Open Document Format (ODF) container (this

@@ -227,7 +227,7 @@ public class Entry
    * will want to call {@link #data()} or {@link #data(String)} to
    * access the data in its intended (plain text) form.</p>
    *
-   * @param The raw data from the entry, still encrypted if it is an
+   * @return The raw data from the entry, still encrypted if it is an
    * encrypted entry, and still deflated if it was compressed.
    **/
   public byte[] raw()

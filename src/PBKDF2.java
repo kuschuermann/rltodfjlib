@@ -35,7 +35,7 @@ import javax.crypto.spec.SecretKeySpec;
  * RFC&nbsp;2898.</p>
  *
  * <p>Unlike the standard Java crypto library's {@link
- * java.crypto.spec.PBEKeySpec} this implementation allows for
+ * javax.crypto.spec.PBEKeySpec} this implementation allows for
  * byte[]-based passwords and is not limited to UTF-8 encoded
  * char[].</p>
  *

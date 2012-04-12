@@ -3,4 +3,4 @@ odf.jar*
 .build
 .antbuildrc
 .manifest
-
+jdoc/*

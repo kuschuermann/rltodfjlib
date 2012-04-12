@@ -123,7 +123,7 @@ public class Crypto
    * @throws NoSuchAlgorithmException The indicated encryption
    * algorithm is not supported.
    *
-   * @param NoSuchPaddingException The indicated algorithm does not
+   * @throws NoSuchPaddingException The indicated algorithm does not
    * support the requested padding.
    **/
   public Crypto( final Map<String,String> encryptionData,
@@ -243,7 +243,7 @@ public class Crypto
    * @throws NoSuchAlgorithmException The indicated encryption
    * algorithm is not supported.
    *
-   * @param NoSuchPaddingException The indicated algorithm does not
+   * @throws NoSuchPaddingException The indicated algorithm does not
    * support the requested padding.
    **/
   public Crypto( final String checksumType,
@@ -364,7 +364,7 @@ public class Crypto
    * @return The plain text (despite the word <em>text</em> this may
    * well be binary data) representing the original data.
    *
-   * @see #decrypt(byte[],Key,byte[])
+   * @see #decrypt(byte[],Key)
    **/
   public byte[] decrypt( final byte[] cipherText,
                          final String password )
@@ -395,7 +395,7 @@ public class Crypto
    * @throws IllegalArgumentException The given key has failed to
    * decrypt the cipherText (the checksum has failed).
    *
-   * @see #decrypt(byte[],Key,String)
+   * @see #decrypt(byte[],Key)
    **/
   public byte[] decrypt( final byte[] cipherText,
                          final Key key )
@@ -484,7 +484,7 @@ public class Crypto
    * the longer it is, the more reasonably secure the resulting key
    * will be.
    *
-   * @param The cryptographic (secret) key derived from the password
+   * @return The cryptographic (secret) key derived from the password
    * after the password has been strengthened.
    **/
   public Key makeKey( final String password )
