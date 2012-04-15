@@ -1,7 +1,24 @@
+Potential resources for ODF crypto:
+        Caolán McNamara <caolanm@redhat.com>	-- deeper into crypto
+	Thorsten Behrens <tbehrens@suse.com>	-- more into zip
+        Tor Lillqvist <tlillqvist@novell.com>	-- fixed crypto stuff(?)
+	 Mikhail Voytenko <mav@openoffice.org>	-- added support for AES
+
+LibreOffice supports (for import) as of April 2012:
+	AES-256/CBC (by URL)			used for export with ODF 1.2
+        AES-192/CBC (by URL)
+        AES-128/CBC (by URL)
+        Blowfish-128/CFB (by name and by URL)	used for export with ODF 1.0/1.1
+
 * TODO Test encrypted AES --- fails on SOME files!?!
   "Configuration2/accelerator/current.xml" and "manifest.rdf" fail
   their checksum test BUT inflating them anyway results in a proper
   file ==> IGNORE the checksum and all is well! THIS IS BULLSHIT!
+
+  Is it possible that I'm not computing the SHA-256/1K digest
+  correctly? Some sort of error-by-one? Maybe there is a portion of
+  the data that is to be skipped? Maybe short data is to be padded
+  rather than digesting less than 1024 bytes?
 * TODO Test un-encrypted data extraction for ODF 1.0/1.1
 * TODO Test un-encrypted data extraction for ODF 1.2
 * TODO Test un-encrypted data extraction for OO.o

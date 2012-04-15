@@ -376,8 +376,45 @@ public class Crypto
            NoSuchAlgorithmException,
            UnsupportedEncodingException
   {
+    return decrypt( cipherText, password, true );
+  }
+
+  /**
+   * <p>Decrypts the given cipher text using a String-based password
+   * (likely entered by a human) which is first strengthened to build
+   * a real cryptographic key; and verifying the decrypted result
+   * against the available checksum.</p>
+   *
+   * @param cipherText The encrypted data (despite the word
+   * <em>text</em> this is binary data).
+   *
+   * @param password The password to serve as a basis for the
+   * cryptographic key. This is strengthened first because plain text
+   * rarely makes for good cryptographic text.
+   *
+   * @param verify Indicate whether the checksum (if available) is to
+   * be used to verify the validity of the decrypted data; if the
+   * checksum verification fails, an IllegalArgumentException will be
+   * thrown.
+   *
+   * @return The plain text (despite the word <em>text</em> this may
+   * well be binary data) representing the original data.
+   *
+   * @see #decrypt(byte[],Key)
+   **/
+  public byte[] decrypt( final byte[] cipherText,
+                         final String password,
+                         final boolean verify )
+    throws InvalidKeyException,
+           InvalidKeySpecException,
+           InvalidAlgorithmParameterException,
+           IllegalBlockSizeException,
+           BadPaddingException,
+           NoSuchAlgorithmException,
+           UnsupportedEncodingException
+  {
     final Key key = makeKey( password );
-    return decrypt( cipherText, key );
+    return decrypt( cipherText, key, verify );
   }
 
   /**
@@ -395,10 +432,49 @@ public class Crypto
    * @throws IllegalArgumentException The given key has failed to
    * decrypt the cipherText (the checksum has failed).
    *
-   * @see #decrypt(byte[],Key)
+   * @see #decrypt(byte[],Key,boolean)
    **/
   public byte[] decrypt( final byte[] cipherText,
                          final Key key )
+    throws InvalidKeyException,
+           InvalidKeySpecException,
+           InvalidAlgorithmParameterException,
+           IllegalBlockSizeException,
+           BadPaddingException,
+           NoSuchAlgorithmException,
+           UnsupportedEncodingException
+  {
+    return decrypt( cipherText, key, true );
+  }
+
+  /**
+   * <p>Decrypts the given cipher text using a given cryptographic
+   * key, optionally verifying the decrypted result against the
+   * available checksum.</p>
+   *
+   * @param cipherText The encrypted data (despite the word
+   * <em>text</em> this is binary data).
+   *
+   * @param key The cryptographic key to be used.
+   *
+   * @param verify Indicate whether the checksum (if available) is to
+   * be used to verify the validity of the decrypted data; if the
+   * checksum verification fails, an IllegalArgumentException will be
+   * thrown.
+   *
+   * @return The plain text (despite the word <em>text</em> this may
+   * well be binary data) representing the original data.
+   *
+   * @throws IllegalArgumentException The given key has failed to
+   * decrypt the cipherText (the checksum has failed); this is not
+   * thrown if verification is disabled at hand of the 'verify'
+   * parameter.
+   *
+   * @see #decrypt(byte[],Key,boolean)
+   **/
+  public byte[] decrypt( final byte[] cipherText,
+                         final Key key,
+                         final boolean verify )
     throws InvalidKeyException,
            InvalidAlgorithmParameterException,
            IllegalBlockSizeException,
@@ -407,10 +483,13 @@ public class Crypto
   {
     final IvParameterSpec iv = new IvParameterSpec( initVector );
     cipher.init( Cipher.DECRYPT_MODE, key, iv );
-    return verify( cipher.doFinal(cipherText) );
+    final byte[] plainText = cipher.doFinal( cipherText );
+    return (verify
+            ? verify(plainText)
+            : plainText);
   }
 
-  private byte[] verify( final byte[] result )
+  public byte[] verify( final byte[] result )
     throws NoSuchAlgorithmException
   {
     if( (checksumType != null) &&
@@ -429,7 +508,8 @@ public class Crypto
           }
         else
           {
-            // no checksum available, cannot verify, assume that it's fine
+            // no (known) checksum algorithm available, cannot verify,
+            // assume (oh great...!) that it's fine
             return result;
           }
 
@@ -438,11 +518,12 @@ public class Crypto
           {
             if( test[i] != checksum[i] )
               {
-                throw new IllegalArgumentException( "Checksum mismatch (wrong key/password?)" );
+                throw new IllegalArgumentException( "Checksum mismatch "+
+                                                    "(wrong key/password?): "+
+                                                    checksumType );
               }
           }
       }
-
     return result;
   }
 
@@ -530,13 +611,20 @@ public class Crypto
     // Translate the cipher algorithm from the version used by the ODF
     // container to the one recognized by the Java crypto libraries:
     String algorithmID;
-    if( algorithmName.equals("Blowfish CFB") )
+    if( algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes256-cbc") ||
+        algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes192-cbc") ||
+        algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes128-cbc") )
+      {
+        // Even though we accept three different algorithsm here, the
+        // key size is the distinguishing factor between 256, 192, and
+        // 128 bit AES, and that distinction is not made in the
+        // 'algorithmID' here
+        algorithmID = "AES/CBC/NoPadding";
+      }
+    else if( algorithmName.equals("Blowfish CFB") ||
+             algorithmName.equals("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#blowfish") )
       {
         algorithmID = "Blowfish/CFB/NoPadding";
-      }
-    else if( algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes256-cbc") )
-      {
-        algorithmID = "AES/CBC/NoPadding";
       }
     else // not recognized, unsupported, most likely won't work
       {
@@ -611,6 +699,11 @@ public class Crypto
     return sha1Digester.digest( passwordCharacters );
   }
 
+  public String toString()
+  {
+    return keyAlgorithm+"-"+(keyDerivSize*8);
+  }
+
   // ======================================================================
   // Fields and Constants
   // ======================================================================
@@ -630,3 +723,4 @@ public class Crypto
   private final String startKeyGen;
   private final int startKeySize;
 }
+

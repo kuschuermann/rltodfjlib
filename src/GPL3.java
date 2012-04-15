@@ -1,3 +1,5 @@
+package com.ringlord;
+
 public class GPL3
 {
   public static final String LICENSE =

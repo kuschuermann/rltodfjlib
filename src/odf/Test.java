@@ -1,7 +1,11 @@
+package com.ringlord.odf;
+
 import java.io.File;
 
 import java.util.List;
 import java.util.ArrayList;
+
+import com.ringlord.GPL3;
 
 import com.ringlord.odf.Container;
 import com.ringlord.odf.Entry;
@@ -129,7 +133,7 @@ public class Test
               {
                 if( password == null )
                   {
-                    System.out.println( "E "+e.name()+" (needs password)" );
+                    System.out.println( e.getCrypto()+" \t"+e.name()+" (needs password)" );
                     System.err.print( "[7mDocument password[0m: [30;40m" );
                     try
                       {
@@ -151,7 +155,7 @@ public class Test
                 try
                   {
                     final byte[] data = e.data( password );
-                    System.out.println( "E "+e.name()+" ("+data.length+" bytes)" );
+                    System.out.println( e.getCrypto()+" \t"+e.name()+" DECRYPTED "+data.length+" bytes" );
                     if( operation == Operation.EXTRACT )
                       {
                         System.err.println( "\tExtract operation not yet implemented" );
@@ -159,7 +163,35 @@ public class Test
                   }
                 catch( Exception x )
                   {
-                    System.out.println( "E "+e.name()+" -- ERROR: "+x.getMessage() );
+                    System.out.println( e.getCrypto()+" \t"+e.name()+" -- ERROR: "+x.getMessage() );
+
+                    // Obtain the entry's raw data (this is likely
+                    // compressed, and the result of that is encrypted
+                    final byte[] raw = e.raw();
+                    System.err.println( "\tRAW size (unverified post-decrypt) = "+raw.length );
+                    // Obtain this entry's cryptographical information
+                    // and using that, decrypt the raw data using our
+                    // password as the basis for the cryptographical
+                    // key, BUT do NOT verify (false) the result: we
+                    // know that verification failed (using convenient
+                    // the "e.data(password)" call above)
+                    final byte[] plain = e.getCrypto().decrypt( raw, password, false );
+                    byte[] finished;
+                    try
+                      {
+                        finished = Entry.inflate( plain );
+                        System.err.println( "\tINFLATED (unverified stuff) = "+finished.length );
+                      }
+                    catch( Exception x2 )
+                      {
+                        finished = plain;
+                        System.err.println( "\tINFLATED size = (failed to inflate)" );
+                      }
+                    System.err.println( new String(finished) );
+                    System.err.println( "======================================================" );
+                    System.err.println( ">>>>> IF THE ABOVE LOOKS LIKE GOOD DATA THEN THE <<<<<" );
+                    System.err.println( ">>>>> CHECKSUM WAS BOGUS BUT THE DATA WAS GOOD!! <<<<<" );
+                    System.err.println( "======================================================" );
                   }
               }
             else
@@ -168,7 +200,7 @@ public class Test
                 if( (data != null) &&
                     (data.length > 0) )
                   {
-                    System.out.println( "P "+e.name()+" ("+data.length+" byte)" );
+                    System.out.println( "PLAIN \t"+e.name()+" ("+data.length+" byte)" );
                     if( operation == Operation.EXTRACT )
                       {
                         System.err.println( "\tExtract operation not yet implemented" );

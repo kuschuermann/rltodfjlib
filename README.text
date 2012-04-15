@@ -60,4 +60,35 @@ BUILDING FROM SOURCE
         but you can force compilation with Java 1.6 by using a command
         like "ant jar6"
 
+HOW DOES IT WORK?
+
+	The Ringlord Technologies ODF Java Library first parses the
+        META-INF/manifest.xml file, collecting the names of all known
+        OASIS Open Document File elements. The container (.zip file)
+        may contain additional files not mentioned in the manifest,
+        and these are added to the Container class afterwards so that
+        a program wanting to look at everything in the container gets
+        all the files, whether the manifest listed them, or not.
+
+        Aside from simply listing what's in the ODF container, the
+        manifest provides detailed instructions on the each element's
+        cryptographical information (if any): What algorithm was used
+        to encrypt it, the size of the key, the initialisation vector,
+        the salt for the key, and a bunch of other complicated stuff.
+
+        When querying the Container class, each Entry returned is
+        either one coming directly from the manifest, or one that the
+        manifest did not list but was found in the .zip container in
+        addition to what the manifest listed. Each such Entry may
+        contain a Crypto object that describes what the manifest had
+        to say about cryptographical data.
+
+        The Crypto object is responsible for decrypting the data.
+
+        The Entry is responsible for inflating (uncompressing) the
+        data, whether it was encrypted or not.
+
+        More detailed information about this process can be found at
+        http://ringlord.com/odfdecrypt.html
+
 #eot
