@@ -33,6 +33,11 @@ USE CASES
         one algorithm to another, or simply read the source code and
         learn a little about cryptography and related concepts.
 
+GITHUB REPOSITORY
+
+	The sources are at GitHub (Project: rltodfjlib):
+        https://github.com/kuschuermann/rltodfjlib
+
 BUILDING FROM SOURCE
 
         The command "ant jar" should do it. If that fails, here is
