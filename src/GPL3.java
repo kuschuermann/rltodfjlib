@@ -1,5 +1,34 @@
 package com.ringlord;
 
+// ======================================================================
+// This file is part of the Ringlord Technologies Java ODF Library,
+// which provides access to the contents of OASIS ODF containers,
+// including encrypted contents.
+//
+// Copyright (C) 2012 K. Udo Schuermann
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// ======================================================================
+
+/**
+ * <p>Carries the text of the GNU General Public License version 3.
+ * Please note that the author tag in this documentation does <em>not
+ * refer to the author of the license</em>, but to the author of the
+ * class that carries this text.</p>
+ *
+ * @author K. Udo Schuermann
+ **/
 public class GPL3
 {
   public static final String LICENSE =

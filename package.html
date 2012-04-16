@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>Ringlord Technologies ODF Java Library</title>
+<body>
+<p>A pure Java library intended to provide simple access to the
+  contents of OASIS Open Document File (ODF) containers, meaning that
+  you can use this library as the basis for extracting either plain
+  text or encrypted (password protected) elements from an ODF
+  file.</p>
+
+<p>Copyright &copy; 2012 Ringlord Technologies<br>
+  Copyright &copy; 2012 K. Udo Schuermann</p>
+
+<p>This program/library is free software: you can redistribute it
+  and/or modify it under the terms of the
+  <a href="www.gnu.org/licenses/" target="_blank">GNU General Public
+  License</a> as published by the Free Software Foundation, either
+  version 3 of the license, or (at your option) any later version.</p>
+
+<h3>Lost your password?</h3>
+
+<p>Some may be tempted to believe that this library can magically
+  offer recovery of lost passwords. <em>That is not the case!</em>
+  Although some fundamental weaknesses exist in the way that ODF uses
+  encryption, based on the fact that the encrypted files are XML and
+  the first ~43 bytes of the original data are predictably the same
+  and thus offer pattern analysis hints to a dedicated cryptanalyst,
+  such analysis is generally beyond the abilities of the general
+  public, is certainly beyond my own abilities, and completely outside
+  the scope of this library.</p>
+
+<p>If you have lost your password, the best that this library can hope
+  to offer you is to form the basis for a tool that would allow you to
+  try brute-force attacks that are faster than typing countless
+  password attempts into a word processor.</p>
+</body>
+</html>

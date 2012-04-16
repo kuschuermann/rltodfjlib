@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>Ringlord Technologies ODF Java Library</title>
+<body>
+<p>General access (currently read-only) to the OASIS Open Document
+  Format container (a .zip file) and its individual file entries. Each
+  of the entries can be encrypted, in which case the {@link
+  com.ringlord.crypto.Crypto} class comes into play.</p>
+
+<p>A {@link com.ringlord.odf.Test} class is provided to serve as a
+  simple command line interface for listing an ODF container's
+  contents, and (in the future) extract it, provide diagnostics
+  reports, etc.</p>
+
+<p>When a {@link com.ringlord.odf.Container} is instantiated, the
+  container's manifest (stored in the "META-INF/manifest.xml" file) is
+  parsed to locate cryptographical information related to each
+  entry. The Container then offers each {@link com.ringlord.odf.Entry}
+  for inspection. If an Entry is an {@link
+  com.ringlord.odf.Entry#isEncrypted() encrypted} one, then it also
+  offers {@link com.ringlord.crypto.Crypto cryptographical}
+  information (obtained from the manifest.</p>
+
+<h3>Sample Usage</h3>
+
+<p>The following sample code demonstrates how a file named "test.odt"
+  can be read, and all of its entries listed by name; afterwards the
+  entry named "content.xml" is obtained, and its data is retrieved; if
+  this entry is encrypted, the password 'test' is supplied:</p>
+
+<pre>
+  Container odf = new Container( new File("test.odt") );
+  try
+    {
+      for( Entry item : odf )
+        {
+          System.err.println( "\t" + item );
+        }
+      final Entry body = odf.get( "content.xml" );
+      if( body != null )
+        {
+          System.err.println( "Found the 'content.xml' entry" );
+          final byte[] data = (e.isEncrypted()
+                               ? e.data("test") // "test" is the password
+                               : e.data());
+          if( data != null ) // it's a file, not a directory?
+            {
+              System.err.println( "Here is the XML:\n" + new String(data) );
+            }
+        }
+    }
+  finally
+    {
+      odf.close();
+    }
+</pre>
+
+</body>
+</html>

@@ -98,6 +98,8 @@ import javax.crypto.spec.SecretKeySpec;
  * </ol>
  *
  * @see <a href="http://rtner.de/software/PBKDF2.html">rtner.de/software/PBKDF2.html</a>
+ *
+ * @author K. Udo Schuermann
  **/
 public class PBKDF2
 {

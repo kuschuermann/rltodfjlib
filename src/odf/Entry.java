@@ -66,7 +66,8 @@ import com.ringlord.crypto.Crypto;
  *   byte[] raw = entry.raw();
  *
  *   // Obtain this Entry's cryptographical information. This was
- *   // extracted from the META-INF/manifest.xml file:
+ *   // extracted from the META-INF/manifest.xml file; if the Entry
+ *   // was not encrypted then this method call returns null
  *   Crypto crypto = entry.getCrypto();
  *
  *   // Generate a cryptographical key based on a password. The
@@ -84,6 +85,11 @@ import com.ringlord.crypto.Crypto;
  *   // And NOW will verify the data; this throws an exception if
  *   // the verification fails:
  *   byte[] verifiedOriginal = entry.verify( decrypted );
+ *
+ *   // And now inflate (uncompress) the data; if this throws an
+ *   // IOException that the data was not deflated/compressed and
+ *   // 'verifiedOriginal' is the original data.
+ *   byte[] uncompressedOriginal = entry.inflate( verifiedOriginal );
  * </pre>
  *
  * @author K Udo Schuermann
@@ -96,6 +102,9 @@ public class Entry
    * appears to be a bug(?) in LibreOffice 3.5.x where the checksum of
    * the decrypted data on the two files fails, even though the data
    * (once inflated) is perfectly fine.
+   *
+   * Whether or not this is a bug in LibreOffice or a brainfart on my
+   * part is under investigation.
    **/
   public static final boolean SPECIAL_IGNORE_BAD_CHECKSUMS = true;
 
