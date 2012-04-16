@@ -1,50 +1,36 @@
-Potential resources for ODF crypto:
-        Caolán McNamara <caolanm@redhat.com>	-- deeper into crypto
-	Thorsten Behrens <tbehrens@suse.com>	-- more into zip
-        Tor Lillqvist <tlillqvist@novell.com>	-- fixed crypto stuff(?)
-	 Mikhail Voytenko <mav@openoffice.org>	-- added support for AES
-
-LibreOffice supports (for import) as of April 2012:
-	AES-256/CBC (by URL)			used for export with ODF 1.2
-        AES-192/CBC (by URL)
-        AES-128/CBC (by URL)
-        Blowfish-128/CFB (by name and by URL)	used for export with ODF 1.0/1.1
-
 * TODO Test encrypted AES --- fails on SOME files!?!
-  "Configuration2/accelerator/current.xml" and "manifest.rdf" fail
-  their checksum test BUT inflating them anyway results in a proper
-  file ==> IGNORE the checksum and all is well! THIS IS BULLSHIT!
+  Not certain if this is a bug in LibreOffice, or evidence of
+  retardation on my part, but "Configuration2/accelerator/current.xml"
+  and "manifest.rdf" fail their checksum test EVEN THOUGH ignoring the
+  failed checksum, and inflating them anyway results in perfectly good
+  files!
 
-  Is it possible that I'm not computing the SHA-256/1K digest
-  correctly? Some sort of error-by-one? Maybe there is a portion of
-  the data that is to be skipped? Maybe short data is to be padded
-  rather than digesting less than 1024 bytes?
+  /me yanks at hair, considers the benefits of alcoholism.
+
 * TODO Test un-encrypted data extraction for ODF 1.0/1.1
 * TODO Test un-encrypted data extraction for ODF 1.2
 * TODO Test un-encrypted data extraction for OO.o
 * TODO Test encrypted data extraction for OO.o
-* TODO Re-encrypt AES encrypted document using Blowfish, instead
+* TODO Feature: Re-encrypt AES encrypted document using Blowfish, instead
+  This could be used as a stop-gap measure to allow users of older
+  software to convert and use documents created by newer software.
 * TODO Add CLI interface to extract contents of an ODF (decrypt & unzip)
-  Default operation: List
-
+  These would affect the Test class, which is used as the command line
+  entry point in case the .jar is executed from the command line
+  rather than being used as an intregral part of another tool.
+** TODO Extract 
   -x to Extract
 
-  -D to Diagnose --- Diagnostics should give information on the data
-  extracted from the XML, list the salt/initVector/etc. in either
-  Base64 or Hexadecimal notation, etc.
+  This could be useful...
+** TODO Diagnose
+  -D to Diagnose --- Diagnostics should give detailed information on
+  the data extracted from the XML, list the salt/initVector/etc. in
+  either Base64 and/or Hexadecimal notation, etc.
 
   Would it make sense to create a "diagnostic instruction pipe", e.g.
   instructions such as "decrypt, inflate" or "inflate, decrypt" to
   determine processing order and success/failure info on applying the
   checksum test at each stage?
-
 * TODO Ensure that the GPL3 preamble is in all sources
-* TODO Official name: "Ringlord Technologies ODF Java Library"
 * TODO Complete/polish in-source (JavaDoc) documentation
 * TODO Publish!
-  Q: Would it make sense to put this on GitHub?
-  A: Yes, probably!
- 
-  Would need to research how to manage such projects, add
-  contributors, and maybe even hand over the project to someone else
-  in the future.
