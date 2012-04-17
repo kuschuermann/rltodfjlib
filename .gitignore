@@ -1,5 +1,5 @@
 *~
-odf.jar*
+*.jar*
 .build
 .antbuildrc
 .manifest
