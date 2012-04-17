@@ -236,8 +236,9 @@ public class Entry
             System.err.println( "WARNING: Ignoring (as configured) failed checksum for "+
                                 "\""+name+"\" ("+raw.length+" deflated/compressed bytes) "+
                                 "that inflate to the following "+inflated.length+" bytes:" );
-            System.err.println( "-----( "+name+" )------------------------------" );
+            System.err.println( "-----( START "+name+" )------------------------------" );
             System.err.println( new String(inflated,UTF8) );
+            System.err.println( "-----( END "+name+" )--------------------------------" );
             return inflated;
           }
         else

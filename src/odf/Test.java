@@ -152,6 +152,10 @@ public class Test
 
             if( e.isEncrypted() )
               {
+                if( options.contains(Option.VERBOSE) )
+                  {
+                    System.err.println( "--------------------------------------------------" );
+                  }
                 if( password == null )
                   {
                     System.out.println( e.getCrypto()+" \t"+e.name()+" (needs password)" );
@@ -231,7 +235,11 @@ public class Test
                 if( (data != null) &&
                     (data.length > 0) )
                   {
-                    System.out.println( "PLAIN \t"+e.name()+" ("+data.length+" byte)" );
+                    if( options.contains(Option.VERBOSE) )
+                      {
+                        System.err.println( "--------------------------------------------------" );
+                      }
+                    System.out.println( "PLAIN \t"+e.name()+" ("+data.length+" bytes)" );
                     if( operation == Operation.EXTRACT )
                       {
                         System.err.println( "\tExtract operation not yet implemented" );
