@@ -2,8 +2,8 @@ package com.ringlord.odf;
 
 import java.io.File;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.ringlord.GPL3;
 
@@ -51,29 +51,48 @@ public class Test
     throws Exception
   {
     Operation operation = Operation.LIST;
+    Set<Option> options = new HashSet<Option>();
     File containerFile = null;
-    List<String> names = new ArrayList<String>();
+    Set<String> names = new HashSet<String>();
+    boolean acceptFlags = true;
     for( String arg : args )
       {
-        if( arg.equals("-x") )
+        if( acceptFlags &&
+            arg.startsWith("-") )
           {
-            operation = Operation.EXTRACT;
-            continue;
-          }
+            if( arg.equals("-x") )
+              {
+                operation = Operation.EXTRACT;
+                continue;
+              }
 
-        if( arg.equals("-L") )
+            if( arg.equals("-L") )
+              {
+                operation = Operation.LICENSE;
+                continue;
+              }
+
+            if( arg.equals("-v") )
+              {
+                options.add( Option.VERBOSE );
+                continue;
+              }
+          }
+        else
           {
-            operation = Operation.LICENSE;
-            continue;
+            // The first argument is the ODF container filename, all
+            // subsequent arguments are treated as file names within
+            // the container in which we are interested
+            if( containerFile == null )
+              {
+                containerFile = new File( arg );
+                continue;
+              }
+            else
+              {
+                names.add( arg );
+              }
           }
-
-        if( containerFile == null )
-          {
-            containerFile = new File( arg );
-            continue;
-          }
-
-        names.add( arg );
       }
 
     if( operation == Operation.LICENSE )
@@ -89,7 +108,7 @@ public class Test
 
     if( containerFile != null )
       {
-        process( operation, containerFile, names );
+        process( operation, options, containerFile, names );
       }
     else
       {
@@ -105,6 +124,7 @@ public class Test
         System.err.println( "Command line options:" );
         System.err.println( "  -x   Extract files rather than list them" );
         System.err.println( "  -L   Show software license (GPL3) text" );
+        System.err.println( "  -v   Show additional informaton about files" );
         System.err.println();
         System.err.println( "First non-option argument is the name of the ODF container file" );
         System.err.println();
@@ -114,8 +134,9 @@ public class Test
   }
 
   private static void process( final Operation operation,
+                               final Set<Option> options,
                                final File containerFile,
-                               final List<String> args )
+                               final Set<String> args )
     throws Exception
   {
     final Container odf = new Container( containerFile );
@@ -156,6 +177,11 @@ public class Test
                   {
                     final byte[] data = e.data( password );
                     System.out.println( e.getCrypto()+" \t"+e.name()+" DECRYPTED "+data.length+" bytes" );
+                    if( options.contains(Option.VERBOSE) )
+                      {
+                        final Crypto crypto = e.getCrypto();
+                        crypto.showInfo();
+                      }
                     if( operation == Operation.EXTRACT )
                       {
                         System.err.println( "\tExtract operation not yet implemented" );
@@ -164,6 +190,11 @@ public class Test
                 catch( Exception x )
                   {
                     System.out.println( e.getCrypto()+" \t"+e.name()+" -- ERROR: "+x.getMessage() );
+                    if( options.contains(Option.VERBOSE) )
+                      {
+                        final Crypto crypto = e.getCrypto();
+                        crypto.showInfo();
+                      }
 
                     // Obtain the entry's raw data (this is likely
                     // compressed, and the result of that is encrypted
@@ -218,8 +249,13 @@ public class Test
   private enum Operation
   {
     LIST,
-      EXTRACT,
-      LICENSE;
+    EXTRACT,
+    LICENSE;
+  }
+
+  private enum Option
+  {
+    VERBOSE;
   }
 
   private static String password;

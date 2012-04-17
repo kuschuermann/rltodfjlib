@@ -518,6 +518,7 @@ public class Crypto
           {
             if( test[i] != checksum[i] )
               {
+                System.err.println( "\t\tBAD CHECKSUM   = "+toHex(test) );
                 throw new IllegalArgumentException( "Checksum mismatch "+
                                                     "(wrong key/password?): "+
                                                     checksumType );
@@ -527,18 +528,33 @@ public class Crypto
     return result;
   }
 
-  private void showInfo()
+  public void showInfo()
   {
-    System.err.println( "\tchecksumType   = "+checksumType );
-    System.err.println( "\tchecksum.len   = "+checksum.length );
-    System.err.println( "\talgorithm      = "+algorithmName );
-    System.err.println( "\tinitVector.len = "+initVector.length );
-    System.err.println( "\tkeyDrivation   = "+keyDerivName );
-    System.err.println( "\tkeyDerivSize   = "+keyDerivSize );
-    System.err.println( "\tkeyDerivIter   = "+keyDerivIter );
-    System.err.println( "\tsalt.len       = "+salt.length );
-    System.err.println( "\tkeyStart       = "+startKeyGen );
-    System.err.println( "\tkeyStartSize   = "+startKeySize );
+    System.err.println( "\t\tChecksumType   = "+checksumType );
+    System.err.println( "\t\tChecksum       = "+toHex(checksum) );
+    System.err.println( "\t\tAlgorithm      = "+algorithmName );
+    System.err.println( "\t\tInitVector     = "+toHex(initVector) );
+    System.err.println( "\t\tKeyDrivation   = "+keyDerivName );
+    System.err.println( "\t\tKeyDerivSize   = "+keyDerivSize );
+    System.err.println( "\t\tKeyDerivIter   = "+keyDerivIter );
+    System.err.println( "\t\tSalt           = "+toHex(salt) );
+    System.err.println( "\t\tKeyStart       = "+startKeyGen );
+    System.err.println( "\t\tKeyStartSize   = "+startKeySize );
+  }
+
+  private String toHex( final byte[] data )
+  {
+    final StringBuilder sb = new StringBuilder();
+    for( int i=0; i<data.length; i++ )
+      {
+        if( (i > 0) &&
+            (i % 4 == 0) )
+          {
+            sb.append( " " );
+          }
+        sb.append( String.format("%02x",data[i]) );
+      }
+    return sb.toString();
   }
 
   /**
