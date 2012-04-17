@@ -6,7 +6,7 @@
 
 project-name=Ringlord Technologies ODF Java Library
 project-is-war=false
-executable-file=odf
+executable-file=rltodfjlib
 main-class=com.ringlord.odf.Test
 default-source-version=1.7
 default-java-version=1.7
