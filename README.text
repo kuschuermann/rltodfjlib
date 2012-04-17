@@ -65,6 +65,8 @@ BUILDING FROM SOURCE
         but you can force compilation with Java 1.6 by using a command
         like "ant jar6"
 
+        The password for test documents in the repository is 'test'.
+
 HOW DOES IT WORK?
 
 	The Ringlord Technologies ODF Java Library first parses the

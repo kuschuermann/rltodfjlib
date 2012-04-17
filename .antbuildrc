@@ -4,7 +4,7 @@
 # not critical to keep around if you really don't want
 # to keep it; be careful of modifying it by hand.
 
-project-name=ODF
+project-name=Ringlord Technologies ODF Java Library
 project-is-war=false
 executable-file=odf
 main-class=com.ringlord.odf.Test

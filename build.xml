@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--	************************************************************
-	Ant 1.6 (or later) Project Build File for: ODF
+	Ant 1.6 (or later) Project Build File for: Ringlord Technologies ODF Java Library
 	Constructed with AntBuilder 1.8 (12-Apr-2012)
 	See http://ringlord.com/products/antbuilder/
 	************************************************************ -->
-<project name="ODF" default="compile" basedir=".">
+<project name="Ringlord Technologies ODF Java Library" default="compile" basedir=".">
 	<property name="build-dir" value=".build"/>
 	<property name="src-dir"   value="src"/>
 	<property name="jdoc-path" value="jdoc"/>
@@ -86,7 +86,7 @@
 		</tstamp>
 		<manifest file=".manifest" mode="update">
 			<attribute name="Main-Class" value="com.ringlord.odf.Test"/>
-			<attribute name="Implementation-Title" value="ODF"/>
+			<attribute name="Implementation-Title" value="Ringlord Technologies ODF Java Library"/>
 			<attribute name="Implementation-Version" value="1.0 (${TODAY})"/>
 		</manifest>
 		<jar    jarfile="${archive}"
@@ -155,9 +155,9 @@
 				use="true"
 				splitindex="false"
 				breakiterator="true"
-				doctitle="Documentation for 'ODF'"
+				doctitle="Documentation for 'Ringlord Technologies ODF Java Library'"
 				overview="package.html"
-				windowtitle="ODF">
+				windowtitle="Ringlord Technologies ODF Java Library">
 			<link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
 			<fileset dir="${src-dir}">
 				<include name="*.java"/>
