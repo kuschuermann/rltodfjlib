@@ -21,16 +21,23 @@
 ** TODO Extract 
   -x to Extract
 
-  This could be useful...
-** TODO Diagnose
-  -D to Diagnose --- Diagnostics should give detailed information on
-  the data extracted from the XML, list the salt/initVector/etc. in
-  either Base64 and/or Hexadecimal notation, etc.
+** DONE Diagnose
+   CLOSED: [2012-04-18 Wed 09:43]
+   NOTE: Implemented with -v (verbose) option.
 
-  Would it make sense to create a "diagnostic instruction pipe", e.g.
-  instructions such as "decrypt, inflate" or "inflate, decrypt" to
-  determine processing order and success/failure info on applying the
-  checksum test at each stage?
-* TODO Ensure that the GPL3 preamble is in all sources
-* TODO Complete/polish in-source (JavaDoc) documentation
-* TODO Publish!
+   This could be useful...
+   -D to Diagnose --- Diagnostics should give detailed information on
+   the data extracted from the XML, list the salt/initVector/etc. in
+   either Base64 and/or Hexadecimal notation, etc.
+   
+   Q: Would it make sense to create a "diagnostic instruction pipe",
+      e.g. instructions such as "decrypt, inflate" or "inflate,
+      decrypt" to determine processing order and success/failure info
+      on applying the checksum test at each stage?
+   A: No, don't drink and think: No real use cases for this.
+* DONE Ensure that the GPL3 preamble is in all sources
+  CLOSED: [2012-04-18 Wed 09:47]
+* DONE Complete/polish in-source (JavaDoc) documentation
+  CLOSED: [2012-04-18 Wed 09:47]
+* DONE Publish!
+  CLOSED: [2012-04-18 Wed 09:47]
