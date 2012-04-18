@@ -229,7 +229,9 @@ public class Entry
       {
         if( SPECIAL_IGNORE_BAD_CHECKSUMS &&
             ("manifest.rdf".equals(name) ||
-             "Configurations2/accelerator/current.xml".equals(name)) )
+             "Configurations2/accelerator/current.xml".equals(name)) &&
+            "http://www.w3.org/2001/04/xmlenc#aes256-cbc".equals(crypto.getAlgorithmName()) &&
+            "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k".equals(crypto.getChecksumType()) )
           {
             plain = crypto.decrypt( raw, password, false );
             final byte[] inflated = inflate( plain );

@@ -152,10 +152,7 @@ public class Test
 
             if( e.isEncrypted() )
               {
-                if( options.contains(Option.VERBOSE) )
-                  {
-                    System.err.println( "--------------------------------------------------" );
-                  }
+                System.err.println( "--------------------------------------------------" );
                 if( password == null )
                   {
                     System.out.println( e.getCrypto()+" \t"+e.name()+" (needs password)" );
@@ -222,11 +219,18 @@ public class Test
                         finished = plain;
                         System.err.println( "\tINFLATED size = (failed to inflate)" );
                       }
-                    System.err.println( new String(finished) );
-                    System.err.println( "======================================================" );
-                    System.err.println( ">>>>> IF THE ABOVE LOOKS LIKE GOOD DATA THEN THE <<<<<" );
-                    System.err.println( ">>>>> CHECKSUM WAS BOGUS BUT THE DATA WAS GOOD!! <<<<<" );
-                    System.err.println( "======================================================" );
+                    final Crypto crypto = e.getCrypto();
+                    if( ("manifest.rdf".equals(e.name()) ||
+                         "Configurations2/accelerator/current.xml".equals(e.name())) &&
+                        "http://www.w3.org/2001/04/xmlenc#aes256-cbc".equals(crypto.getAlgorithmName()) &&
+                        "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k".equals(crypto.getChecksumType()) )
+                      {
+                        System.err.println( new String(finished) );
+                        System.err.println( "======================================================" );
+                        System.err.println( ">>>>> IF THE ABOVE LOOKS LIKE GOOD DATA THEN THE <<<<<" );
+                        System.err.println( ">>>>> CHECKSUM WAS BOGUS BUT THE DATA WAS GOOD!! <<<<<" );
+                        System.err.println( "======================================================" );
+                      }
                   }
               }
             else
@@ -235,10 +239,7 @@ public class Test
                 if( (data != null) &&
                     (data.length > 0) )
                   {
-                    if( options.contains(Option.VERBOSE) )
-                      {
-                        System.err.println( "--------------------------------------------------" );
-                      }
+                    System.err.println( "--------------------------------------------------" );
                     System.out.println( "PLAIN \t"+e.name()+" ("+data.length+" bytes)" );
                     if( operation == Operation.EXTRACT )
                       {

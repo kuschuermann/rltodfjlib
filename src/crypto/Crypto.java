@@ -518,7 +518,11 @@ public class Crypto
           {
             if( test[i] != checksum[i] )
               {
-                System.err.println( "\t\tBAD CHECKSUM   = "+toHex(test) );
+                if( algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes256-cbc") &&
+                    checksumType.equals("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k") )
+                  {
+                    System.err.println( "\t\tBAD CHECKSUM   = "+toHex(test) );
+                  }
                 throw new IllegalArgumentException( "Checksum mismatch "+
                                                     "(wrong key/password?): "+
                                                     checksumType );
@@ -672,6 +676,15 @@ public class Crypto
     this.keyAlgorithm = (slashPos < 0
                          ? algorithmID
                          : algorithmID.substring(0,slashPos));
+  }
+
+  public String getChecksumType()
+  {
+    return checksumType;
+  }
+  public String getAlgorithmName()
+  {
+    return algorithmName;
   }
 
   /**
