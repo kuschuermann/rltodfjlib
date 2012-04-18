@@ -27,6 +27,8 @@ import java.util.Map;
 
 import com.ringlord.mime.Base64;
 
+import static com.ringlord.odf.Entry.SPECIAL_IGNORE_BAD_CHECKSUMS;
+
 // ======================================================================
 // This file is part of the Ringlord Technologies Java ODF Library,
 // which provides access to the contents of OASIS ODF containers,
@@ -518,7 +520,8 @@ public class Crypto
           {
             if( test[i] != checksum[i] )
               {
-                if( algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes256-cbc") &&
+                if( SPECIAL_IGNORE_BAD_CHECKSUMS &&
+                    algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes256-cbc") &&
                     checksumType.equals("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k") )
                   {
                     System.err.println( "\t\tBAD CHECKSUM   = "+toHex(test) );
