@@ -70,7 +70,7 @@
 		<mkdir  dir="${build-dir}"/>
 		<javac  srcdir="${src-dir}"
 			destdir="${build-dir}"
-			source="1.7"
+			source="1.6"
 			target="${target}"
 			bootclasspath="${rt_jar}"
 			deprecation="true"
