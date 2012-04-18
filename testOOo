@@ -1,2 +1,2 @@
 #!/bin/sh
-java -cp odf.jar com.ringlord.odf.Container TestOOo.odt
+java -jar rltodfjlib.jar "$@" TestOOo.sxw

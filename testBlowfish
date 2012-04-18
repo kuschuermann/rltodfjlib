@@ -1,2 +1,2 @@
 #!/bin/sh
-java -cp odf.jar com.ringlord.odf.Container TestBlowfish.odt
+java -jar rltodfjlib.jar "$@" TestBlowfish.odt
