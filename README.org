@@ -6,7 +6,7 @@
    The Ringlord Technologies ODF Java Library provides access to the
    contents of OASIS Open Document File containers such as supported
    by LibreOffice, OpenOffice.org, KOffice, AbiWord, Google Docs,
-   Scribus, Microsoft Office, etc.
+   Scribus, Microsoft® Office, etc.
 
    Specifically, cryptographically secured files can be extracted
    using the correct password.
@@ -42,7 +42,7 @@
    of the .build/ directory. Essentially, these three commands are all
    you really need to build it:
    
-   : mddir .build
+   : mkdir .build
    : jar cfe odf.jar Test -C .build/ . \
    :                      -C . src/*.java \
    :                      README.text LICENSE.TXT build.xml
