@@ -41,9 +41,9 @@
       if( body != null )
         {
           System.err.println( "Found the 'content.xml' entry" );
-          final byte[] data = (e.isEncrypted()
-                               ? e.data("test") // "test" is the password
-                               : e.data());
+          final byte[] data = (body.isEncrypted()
+                               ? body.data("test") // "test" is the password
+                               : body.data());
           if( data != null ) // it's a file, not a directory?
             {
               System.err.println( "Here is the XML:\n" + new String(data) );
