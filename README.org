@@ -82,33 +82,32 @@
    More detailed information about this process can be found at
    http://ringlord.com/odfdecrypt.html
 ** Example Code
-   import com.ringlord.odf.Container;
-   import com.ringlord.odf.Entry;
-
-   ...
-
-   Container odf = new Container( new File("test.odt") );
-   try
-     {
-       for( Entry item : odf )
-         {
-           System.err.println( "\t" + item );
-         }
-       final Entry body = odf.get( "content.xml" );
-       if( body != null )
-         {
-           System.err.println( "Found the 'content.xml' entry" );
-           final byte[] data = (body.isEncrypted()
-                                ? body.data("test") // "test" is the password
-                                : body.data());
-           if( data != null ) // it's a file, not a directory?
-             {
-               System.err.println( "Here is the XML:\n" + new String(data) );
-             }
-         }
-     }
-   finally
-     {
-       odf.close();
-     }
- 
+   : import com.ringlord.odf.Container;
+   : import com.ringlord.odf.Entry;
+   :
+   : ...
+   : 
+   : Container odf = new Container( new File("test.odt") );
+   : try
+   :   {
+   :     for( Entry item : odf )
+   :       {
+   :         System.err.println( "\t" + item );
+   :       }
+   :     final Entry body = odf.get( "content.xml" );
+   :     if( body != null )
+   :       {
+   :         System.err.println( "Found the 'content.xml' entry" );
+   :         final byte[] data = (body.isEncrypted()
+   :                              ? body.data("test") // "test" is the password
+   :                              : body.data());
+   :         if( data != null ) // it's a file, not a directory?
+   :           {
+   :             System.err.println( "Here is the XML:\n" + new String(data) );
+   :           }
+   :       }
+   :   }
+   : finally
+   :   {
+   :     odf.close();
+   :   }
