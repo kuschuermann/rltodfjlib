@@ -1,26 +1,5 @@
 package com.ringlord.mime;
 
-// ======================================================================
-// This file is distributed as part of the Ringlord Technologies Java
-// ODF Library, which provides access to the contents of OASIS ODF
-// containers, including encrypted contents.
-//
-// Copyright (C) 2012 K. Udo Schuermann
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-// ======================================================================
-
 /**
  * Provides static methods for converting binary (byte[]) data into a
  * BASE-64 encoded byte[] array, and vice versa. Output generated will
@@ -39,13 +18,13 @@ package com.ringlord.mime;
  * me in TURBO Pascal around 1987 or 1988 (the early dawn of Ringlord
  * Technologies :-)
  *
- * @author Udo K. Schuermann (udo@ringlord.com)
+ * @author Udo K. Schuermann (walrus@ringlord.com)
  *
  * @version 2.1 (10-Feb-2001)
  **/
-final public class Base64
+public final class Base64
 {
-  final static public void main( String[] args )
+  public static void main( String[] args )
   {
     if( args.length == 0 )
       {
@@ -73,7 +52,7 @@ final public class Base64
    * @return The BASE-64 equivalent of the input. No newlines or other
    * formatting data is added.
    **/
-  final public static byte[] encode( byte[] original )
+  public static byte[] encode( byte[] original )
   {
     // The number of bytes that we will generated, including
     // possible padding symbols (ending with '=' or '==')
@@ -87,8 +66,9 @@ final public class Base64
         boolean have3=false, have4=false;
         // Now extract up to 3 bytes from the original input
         int data = (original[iPos] & 0xff) << 16;
-        if( (iPos+1) < original.length )        // do we have any more?
+        if( (iPos+1) < original.length )
           {
+            // we have more!
             data |= (original[iPos+1] & 0xff) << 8;
             have3 = true;
           }
@@ -132,7 +112,7 @@ final public class Base64
    *
    * @return The original data from the BASE-64 input.
    **/
-  final public static byte[] decode( byte[] base64 )
+  public static byte[] decode( byte[] base64 )
   {
     int usableBytes = base64.length;
     for( int i=0; i<base64.length; i++ )
@@ -161,24 +141,30 @@ final public class Base64
         if( data >= 0 )
           {
             bucket = (bucket << 6) | data;
-            if( available >= 2 )        // plus the 6 we just added is at least 8
+            if( available >= 2 )
               {
+                // plus the 6 we just added is at least 8
                 available -= 2;
                 result[ oPos++ ] = (byte)((bucket >> available) & 0xff);
               }
             else
               {
-                available += 6; // just added 6 bits
+                // just added 6 bits
+                available += 6;
               }
           }
       }
     return result;
   }
 
+  private Base64()
+  {
+  }
+
   /**
    * BASE-64 characters for values 0..63 plus the padding symbol '='
    **/
-  static private byte[] sixtyFour = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".getBytes();
+  private static byte[] sixtyFour = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".getBytes();
 
   /**
    * Fast lookup table lookup table for converting BASE64 characters
@@ -186,13 +172,22 @@ final public class Base64
    * '=' is NOT part of this; leaving it out will cause that value
    * to be ignored which is exactly what we want
    **/
-  static private byte[] binaryValue = new byte[256];
+  private static byte[] binaryValue = new byte[256];
   static
     {
       for( int i=0; i<256; i++ ) binaryValue[i] = -1;
-      for( int i='A'; i<='Z'; i++ ) binaryValue[i] = (byte)(     i - 'A');
-      for( int i='a'; i<='z'; i++ ) binaryValue[i] = (byte)(26 + i - 'a');
-      for( int i='0'; i<='9'; i++ ) binaryValue[i] = (byte)(52 + i - '0');
+      for( int i='A'; i<='Z'; i++ )
+        {
+          binaryValue[i] = (byte)(     i - 'A');
+        }
+      for( int i='a'; i<='z'; i++ )
+        {
+          binaryValue[i] = (byte)(26 + i - 'a');
+        }
+      for( int i='0'; i<='9'; i++ )
+        {
+          binaryValue[i] = (byte)(52 + i - '0');
+        }
       binaryValue['+'] = 62;
       binaryValue['/'] = 63;
     }
