@@ -267,5 +267,9 @@ public class Test
     VERBOSE;
   }
 
+  private Test()
+  {
+  }
+
   private static String password;
 }

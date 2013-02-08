@@ -7,9 +7,6 @@ import java.io.IOException;
 
 import java.nio.charset.Charset;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 

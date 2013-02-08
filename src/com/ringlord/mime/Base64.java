@@ -175,7 +175,10 @@ public final class Base64
   private static byte[] binaryValue = new byte[256];
   static
     {
-      for( int i=0; i<256; i++ ) binaryValue[i] = -1;
+      for( int i=0; i<256; i++ )
+        {
+          binaryValue[i] = -1;
+        }
       for( int i='A'; i<='Z'; i++ )
         {
           binaryValue[i] = (byte)(     i - 'A');

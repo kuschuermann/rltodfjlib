@@ -1,8 +1,5 @@
 package com.ringlord.crypto;
 
-import java.io.UnsupportedEncodingException;
-
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 
@@ -101,7 +98,7 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * @author K. Udo Schuermann
  **/
-public class PBKDF2
+public final class PBKDF2
 {
   public static byte[] deriveKey( final byte[] password,
                                   final byte[] salt,
@@ -123,21 +120,21 @@ public class PBKDF2
     final int l = ceil( dkLen, hLen);           // this will be 1 for 128bit (16-byte) keys
     final int r = dkLen - (l-1)*hLen;           // this will be 16 for 128bit (16-byte) keys
 
-    final byte T[] = new byte[l * hLen];
+    final byte t[] = new byte[l * hLen];
     int ti_offset = 0;
     for (int i = 1; i <= l; i++)
       {
-        F( T, ti_offset, prf, salt, iterationCount, i );
+        F( t, ti_offset, prf, salt, iterationCount, i );
         ti_offset += hLen;
       }
     if (r < hLen)
       {
         // Incomplete last block
-        byte DK[] = new byte[dkLen];
-        System.arraycopy(T, 0, DK, 0, dkLen);
-        return DK;
+        byte dk[] = new byte[dkLen];
+        System.arraycopy(t, 0, dk, 0, dkLen);
+        return dk;
       }
-    return T;
+    return t;
   }
 
   /**
@@ -166,24 +163,24 @@ public class PBKDF2
   private static void F( final byte[] dest,
                          final int offset,
                          final Mac prf,
-                         final byte[] S,
+                         final byte[] s,
                          final int c,
                          final int blockIndex )
   {
     final int hLen = prf.getMacLength();
-    byte U_r[] = new byte[ hLen ];
+    byte u_r[] = new byte[ hLen ];
 
-    // U0 = S || INT (i);
-    byte U_i[] = new byte[S.length + 4];
-    System.arraycopy( S, 0, U_i, 0, S.length );
-    INT( U_i, S.length, blockIndex );
+    // u0 = s || INT (i);
+    byte u_i[] = new byte[s.length + 4];
+    System.arraycopy( s, 0, u_i, 0, s.length );
+    INT( u_i, s.length, blockIndex );
 
     for( int i = 0; i < c; i++ )
       {
-        U_i = prf.doFinal( U_i );
-        xor( U_r, U_i );
+        u_i = prf.doFinal( u_i );
+        xor( u_r, u_i );
       }
-    System.arraycopy( U_r, 0, dest, offset, hLen );
+    System.arraycopy( u_r, 0, dest, offset, hLen );
   }
 
     /**
@@ -218,5 +215,9 @@ public class PBKDF2
     dest[offset + 1] = (byte) (i / (256 * 256));
     dest[offset + 2] = (byte) (i / (256));
     dest[offset + 3] = (byte) (i);
+  }
+
+  private PBKDF2()
+  {
   }
 }

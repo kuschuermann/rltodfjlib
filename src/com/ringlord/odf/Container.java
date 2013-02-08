@@ -2,20 +2,12 @@ package com.ringlord.odf;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Enumeration;
 
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
@@ -123,8 +115,7 @@ public class Container
   public Container( final File file )
     throws IOException,
            ParserConfigurationException,
-           SAXException,
-           SAXParseException
+           SAXException
   {
     super();
     this.file = file;
@@ -167,8 +158,7 @@ public class Container
   public Container( final InputStream f )
     throws IOException,
            ParserConfigurationException,
-           SAXException,
-           SAXParseException
+           SAXException
   {
     super();
     this.file = File.createTempFile( "odf", null);
@@ -324,8 +314,7 @@ public class Container
   private void init()
     throws IOException,
            ParserConfigurationException,
-           SAXException,
-           SAXParseException
+           SAXException
   {
     final InputStream manifestStream = getInputStream( "META-INF/manifest.xml" );
     if( manifestStream == null )

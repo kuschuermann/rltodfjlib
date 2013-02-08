@@ -29,8 +29,12 @@ package com.ringlord;
  *
  * @author K. Udo Schuermann
  **/
-public class GPL3
+public final class GPL3
 {
+  private GPL3()
+  {
+  }
+
   public static final String LICENSE =
     "                    GNU GENERAL PUBLIC LICENSE\n"+
     "                       Version 3, 29 June 2007\n"+

@@ -1,6 +1,5 @@
 package com.ringlord.crypto;
 
-import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
 
 import java.security.MessageDigest;
@@ -9,17 +8,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
-import java.security.GeneralSecurityException;
 import java.security.spec.InvalidKeySpecException;
 
+import java.util.Arrays;
+
 import javax.crypto.Cipher;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.SecretKey;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.BadPaddingException;
-import javax.crypto.Mac;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -264,15 +260,15 @@ public class Crypto
     super();
 
     this.checksumType  = checksumType;
-    this.checksum      = checksum;
+    this.checksum      = Arrays.copyOf(checksum,checksum.length);
 
     this.algorithmName = algorithmName;
-    this.initVector    = initVector;
+    this.initVector    = Arrays.copyOf(initVector,initVector.length);
 
     this.keyDerivName  = keyDerivationAlgorithmName;
     this.keyDerivSize  = keyDerivationSize;
     this.keyDerivIter  = keyDerivationIterationCount;
-    this.salt          = salt;
+    this.salt          = Arrays.copyOf(salt,salt.length);
 
     this.startKeyGen   = startKeyGenerationName;
     this.startKeySize  = startKeySize;
@@ -668,14 +664,13 @@ public class Crypto
       {
         keyDerivationID = keyDerivName;
       }
-    this.keyFactory = SecretKeyFactory.getInstance( keyDerivationID );
 
     // ----------------------------------------------------------------------
     // A cipher specification is either "Name" or "Name/Mode/Padding",
     // so we'll look for the first '/' symbol and, if present, take
     // the name that precedes it or the whole thing if there is no '/'
     // for the name of the secret key algorithm:
-    final int slashPos = algorithmID.indexOf("/");
+    final int slashPos = algorithmID.indexOf('/');
     this.keyAlgorithm = (slashPos < 0
                          ? algorithmID
                          : algorithmID.substring(0,slashPos));
@@ -741,7 +736,6 @@ public class Crypto
   // ======================================================================
 
   private Cipher cipher;
-  private SecretKeyFactory keyFactory;
   private String keyAlgorithm; // based on cipherType
   //
   private final String checksumType;

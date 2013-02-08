@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Enumeration;
@@ -24,11 +23,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import com.ringlord.mime.Base64;
 
 import com.ringlord.crypto.Crypto;
 
@@ -119,9 +115,9 @@ class Manifest
 
   public Iterator<Entry> iterator()
   {
-    final List<Entry> entries = new ArrayList<Entry>();
-    entries.addAll( this.entries.values() );
-    return entries.iterator();
+    final List<Entry> result = new ArrayList<Entry>();
+    result.addAll( entries.values() );
+    return result.iterator();
   }
 
   public void characters( final char[] data,
