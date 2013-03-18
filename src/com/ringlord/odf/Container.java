@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 
 import java.util.Iterator;
@@ -59,8 +60,11 @@ import org.xml.sax.SAXParseException;
  * the Container is closed or the JVM exits properly.</p>
  *
  * <pre>
- * Container odf = new Container( new File("test.odt") );
- * try
+ * // import com.ringlord.odf.Container;
+ * // import com.ringlord.odf.Entry;
+ * // &hellip;
+ *
+ * try( Container odf = new Container(new File("test.odt")) )
  *   {
  *     for( Entry item : odf )
  *       {
@@ -79,16 +83,13 @@ import org.xml.sax.SAXParseException;
  *           }
  *       }
  *   }
- * finally
- *   {
- *     odf.close();
- *   }
  * </pre>
  *
  * @author K. Udo Schuermann
  **/
 public class Container
-  implements Iterable<Entry>
+  implements Iterable<Entry>,
+             Closeable
 {
   /**
    * <p>Processes the File as an ODF container.</p>

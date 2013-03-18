@@ -62,10 +62,10 @@
    manifest listed them, or not.
 
    Aside from simply listing what's in the ODF container, the manifest
-   provides detailed instructions on the each element's
-   cryptographical information (if any): What algorithm was used to
-   encrypt it, the size of the key, the initialisation vector, the
-   salt for the key, and a bunch of other complicated stuff.
+   provides detailed instructions on each element's cryptographical
+   information (if any): What algorithm was used to encrypt it, the
+   size of the key, the initialisation vector, the salt for the key,
+   and a bunch of other “complicated” stuff.
 
    When querying the Container class, each Entry returned is either
    one coming directly from the manifest, or one that the manifest did
