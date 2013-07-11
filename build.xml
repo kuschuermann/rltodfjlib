@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--	************************************************************
 	Ant 1.6 (or later) Project Build File for: Ringlord Technologies ODF Java Library
-	Constructed with AntBuilder 1.8 (12-Apr-2012)
+	Constructed with AntBuilder 1.22 (8-Jul-2013)
 	See http://ringlord.com/products/antbuilder/
 	************************************************************ -->
 <project name="Ringlord Technologies ODF Java Library" default="compile" basedir=".">
@@ -10,6 +10,26 @@
 	<property name="jdoc-path" value="jdoc"/>
 	<property name="archive"   value="rltodfjlib.jar"/>
 	<property name="tar-file"  value="rltodfjlib.tar"/>
+	<property name="source"    value="1.6"/>
+
+	<!-- The following file must provide information about the
+	     keystore. Unless you really know what you're doing,
+	     the keystore should be completely outside the project
+	     directory. You do not want to distribute it, and you
+	     do not want to commit it into the repository. This
+	     information should be supplied individually by the
+	     person or entity building the code. If the keystore
+	     fell into someone else's hands, they could sign and
+	     distribute any and all code as if you had done so.
+
+	     The following four keys must be defined (as key=value
+	     pairs) in the ../.keystore-info file:
+	          keystore-file   The Java Keystore File
+	          keystore-pass   The password for the keystore
+	          key-alias       The alias for the signing key
+	          key-pass        The password for the signing key
+-->
+	<property file="../.keystore-info"/>
 
 	<target name="all" depends="clean,jar,docs" description="Cleans project and then builds the rltodfjlib.jar and the JavaDocs"/>
 
@@ -33,50 +53,21 @@
 		<delete file="${tar-file}" verbose="false" quiet="true"/>
 		<delete file="${archive}.md5" verbose="false" quiet="true"/>
 		<delete file="${archive}.sha1" verbose="false" quiet="true"/>
-	</target>
-
-	<target name="jar4" description="Builds the rltodfjlib.jar for Java 1.4">
-		<property name="target" value="1.4"/>
-		<antcall target="jar"/>
-	</target>
-
-	<target name="jar5" description="Builds the rltodfjlib.jar for Java 1.5">
-		<property name="target" value="1.5"/>
-		<property name="rt_jar" value="/usr/lib/jvm/java-1.5.0-gcj/jre/lib/rt.jar"/>
-		<antcall target="jar"/>
-	</target>
-
-	<target name="jar6" description="Builds the rltodfjlib.jar for Java 1.6">
-		<property name="target" value="1.6"/>
-		<property name="rt_jar" value="/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/rt.jar"/>
-		<antcall target="jar"/>
-	</target>
-
-	<target name="jar7" description="Builds the rltodfjlib.jar for Java 1.7">
-		<property name="target" value="1.7"/>
-		<property name="rt_jar" value="/usr/lib/jvm/jdk1.7.0_02/jre/lib/rt.jar"/>
-		<antcall target="jar"/>
-	</target>
-
-	<target name="jar8" description="Builds the rltodfjlib.jar for Java 1.8">
-		<property name="target" value="1.8"/>
-		<antcall target="jar"/>
+		<delete file="${archive}.sha256" verbose="false" quiet="true"/>
 	</target>
 
 	<target name="compile" description="Compiles the project into .build/">
 		<property name="target" value="1.7"/>
-		<property name="rt_jar" value="/usr/lib/jvm/jdk1.7.0_02/jre/lib/rt.jar"/>
-		<echo message="Compiling for Java ${target} with runtime ${rt_jar}"/>
+		<echo message="Compiling Java ${source} sources for ${target} JVM"/>
 		<mkdir  dir="${build-dir}"/>
 		<javac  srcdir="${src-dir}"
 			destdir="${build-dir}"
-			source="1.6"
+			source="${source}"
 			target="${target}"
-			bootclasspath="${rt_jar}"
 			deprecation="true"
 			includeantruntime="false"
 			debug="true">
-			<compilerarg value="-Xlint:all,-path,-serial"/>
+			<compilerarg value="-Xlint:all,-serial"/>
 		</javac>
 	</target>
 
@@ -94,11 +85,21 @@
 			whenempty="fail"
 			index="false"><!-- index='false' allows external JARs to be found -->
 			<fileset dir="${build-dir}" includes="**/*.class"/>
+			<fileset dir="." includes="*.fxml"/>
 			<fileset dir="." includes="LICENSE.TXT"/>
 			<fileset dir="." includes="README.text"/>
 			<fileset dir="." includes="${src-dir}/**/*.java"/>
+			<fileset dir="${build-dir}" includes="lib-src/**/*.java"/>
 			<fileset dir="." includes="build.xml"/>
 		</jar>
+		<signjar jar="${archive}"
+			 signedjar=".${archive}"
+			 keystore="${keystore-file}"
+			 storepass="${keystore-pass}"
+			 alias="${key-alias}"
+			 keypass="${key-pass}"
+			 lazy="true"/>
+		<move file=".${archive}" tofile="${archive}"/>
 		<chmod perm="+x" type="file" file="${archive}"/>
 		<checksum
 			file="${archive}"
@@ -112,6 +113,18 @@
 			algorithm="SHA1"
 			fileext=".sha1"
 			forceOverwrite="yes"/>
+		<checksum
+			file="${archive}"
+			pattern="{0} *{1}"
+			algorithm="SHA-256"
+			fileext=".sha256"
+			forceOverwrite="yes"/>
+	</target>
+
+	<target name="webstart" depends="clean,jar" description="Constructs the rltodfjlib.jar and signs it">
+		<mkdir dir="jws"/>
+		<copy file="${archive}" tofile="jws/${archive}"/>
+		<chmod perm="+x" type="file" file="jws/${archive}"/>
 	</target>
 
 	<target name="dist" depends="clean,jar" description="Builds a distribution in rltodfjlib.tar.gz INCLUDING source code">
@@ -149,10 +162,11 @@
 		<mkdir  dir="${jdoc-path}"/>
 		<javadoc        sourcepath="${src-dir}"
 				destdir="${jdoc-path}"
-				private="true"
+				protected="true"
 				author="true"
 				version="true"
 				use="true"
+				charset="UTF-8"
 				splitindex="false"
 				breakiterator="true"
 				doctitle="Documentation for 'Ringlord Technologies ODF Java Library'"
@@ -166,7 +180,7 @@
 		</javadoc>
 	</target>
 
-	<target name="gitlog" description="Generate the ChangeLog file from git's repository">
+	<target name="log" description="Generate the rltodfjlib.log from git's repository">
 		<git    command="log" output=".git-output"/>
 		<move   file=".git-output" tofile="ChangeLog"/>
 		<fixcrlf srcdir="." includes="ChangeLog" eol="crlf" eof="remove"/>
@@ -189,4 +203,19 @@
 			</exec>
 		</sequential>
 	</macrodef>
+	<target name="jar6" description="Builds the rltodfjlib.jar for Java 1.6">
+		<property name="target" value="1.6"/>
+		<antcall target="jar"/>
+	</target>
+
+	<target name="jar7" description="Builds the rltodfjlib.jar for Java 1.7">
+		<property name="target" value="1.7"/>
+		<antcall target="jar"/>
+	</target>
+
+	<target name="jar8" description="Builds the rltodfjlib.jar for Java 1.8">
+		<property name="target" value="1.8"/>
+		<antcall target="jar"/>
+	</target>
+
 </project>

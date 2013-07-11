@@ -289,7 +289,10 @@ public class Container
       {
         try
           {
-            container.close();
+            if( container != null )
+              {
+                container.close();
+              }
             if( isTemporaryContainer )
               {
                 file.delete();
