@@ -29,7 +29,7 @@
 	          key-alias       The alias for the signing key
 	          key-pass        The password for the signing key
 -->
-	<property file="../.keystore-info"/>
+	<property file="/home/udo/projects/.keystore-info"/>
 
 	<target name="all" depends="clean,jar,docs" description="Cleans project and then builds the rltodfjlib.jar and the JavaDocs"/>
 

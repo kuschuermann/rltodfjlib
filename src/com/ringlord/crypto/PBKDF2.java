@@ -124,7 +124,8 @@ public final class PBKDF2
     final int hLen = prf.getMacLength(); // this will be 20 for SHA1
     final int l = ceil( dkLen,
 	                hLen ); // this will be 1 for 128bit (16-byte) keys
-    final int r = dkLen - (l - 1) * hLen; // this will be 16 for 128bit (16-byte) keys
+    final int r = dkLen - (l - 1) * hLen; // this will be 16 for 128bit
+					  // (16-byte) keys
 
     final byte t[] = new byte[l * hLen];
     int ti_offset = 0;
@@ -242,10 +243,10 @@ public final class PBKDF2
 	                   final int offset,
 	                   final int i )
   {
-    dest[offset + 0] = (byte) (i / (256 * 256 * 256));
-    dest[offset + 1] = (byte) (i / (256 * 256));
-    dest[offset + 2] = (byte) (i / (256));
-    dest[offset + 3] = (byte) (i);
+    dest[offset + 0] = (byte)(i / (256 * 256 * 256));
+    dest[offset + 1] = (byte)(i / (256 * 256));
+    dest[offset + 2] = (byte)(i / (256));
+    dest[offset + 3] = (byte)(i);
   }
 
 

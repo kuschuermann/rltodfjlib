@@ -1,29 +1,25 @@
 package com.ringlord.crypto;
 
+import static com.ringlord.odf.Entry.SPECIAL_IGNORE_BAD_CHECKSUMS;
+
 import java.io.UnsupportedEncodingException;
-
-import java.security.MessageDigest;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.InvalidKeyException;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
 import java.util.Arrays;
+import java.util.Map;
 
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import java.util.Map;
-
 import com.ringlord.mime.Base64;
 
-import static com.ringlord.odf.Entry.SPECIAL_IGNORE_BAD_CHECKSUMS;
 
 // ======================================================================
 // This file is part of the Ringlord Technologies Java ODF Library,
@@ -39,35 +35,39 @@ import static com.ringlord.odf.Entry.SPECIAL_IGNORE_BAD_CHECKSUMS;
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
 // ======================================================================
 
 /**
- * <p>Encrypt/decrypt data using a password. Although this class is
- * intended to be flexible, it is presently limited to use the PBKDF2
- * password-based key derivative function for key strengthening and
- * is not prepared to adjust to other algorithms.</p>
+ * <p>
+ * Encrypt/decrypt data using a password. Although this class is intended to be
+ * flexible, it is presently limited to use the PBKDF2 password-based key
+ * derivative function for key strengthening and is not prepared to adjust to
+ * other algorithms.
+ * </p>
  *
- * <p>This limitation is entirely due to the fact that the Java crypto
- * libraries require a password-based keys to be built from UTF-8
- * encoded passwords rather than binary and we had to supply a
- * binary-capable implementation of our own; although it could be
- * ascribed to laziness, we lack the requisite knowledge to integrate
- * this class into the Java crypto framework.</p>
+ * <p>
+ * This limitation is entirely due to the fact that the Java crypto libraries
+ * require a password-based keys to be built from UTF-8 encoded passwords rather
+ * than binary and we had to supply a binary-capable implementation of our own;
+ * although it could be ascribed to laziness, we lack the requisite knowledge to
+ * integrate this class into the Java crypto framework.
+ * </p>
  *
- * <p>NOTE: Although I have spent a fair amount of time working with
- * and researching these topics and <em>believe that I understand the
+ * <p>
+ * NOTE: Although I have spent a fair amount of time working with and
+ * researching these topics and <em>believe that I understand the
  * concepts sufficiently</em>, I am no cryptographer and there may be
- * inaccuracies in the various explanations given in this class, even
- * blatant ones that could mislead your own understanding of the
- * concepts. I urge you not to rely blindly on this class to build
- * your own understanding of cryptographical concepts, but do your own
- * reseach. It's really brilliant fun once you realize how it all fits
- * together!</p>
+ * inaccuracies in the various explanations given in this class, even blatant
+ * ones that could mislead your own understanding of the concepts. I urge you
+ * not to rely blindly on this class to build your own understanding of
+ * cryptographical concepts, but do your own reseach. It's really brilliant fun
+ * once you realize how it all fits together!
+ * </p>
  *
  * @author K. Udo Schuermann
  **/
@@ -78,171 +78,186 @@ public class Crypto
   // ======================================================================
 
   /**
-   * <p>Constructs a Crypto object using four groups of key/value
-   * pairs based directly on the XML element names and attributes
-   * found in the OASIS Open Document Format specification v1.2's
-   * "META-INF/manifest.xml" file inside the ODF container.</p>
+   * <p>
+   * Constructs a Crypto object using four groups of key/value pairs based
+   * directly on the XML element names and attributes found in the OASIS Open
+   * Document Format specification v1.2's "META-INF/manifest.xml" file inside
+   * the ODF container.
+   * </p>
    *
-   * <p>This form of the constructor requires virtually no
-   * pre-processing from the data found in the container's
-   * manifest.</p>
+   * <p>
+   * This form of the constructor requires virtually no pre-processing from the
+   * data found in the container's manifest.
+   * </p>
    *
-   * <p>Note that none of the parameters can be null, but the older
-   * OASIS ODF specification v1.0/v1.1 does not name some of the
-   * values that the v1.2 specification does. Missing values will,
-   * under specific circumstances, be given assumed defaults (such as
-   * the implied use of "SHA1" to start key strengthening).
+   * <p>
+   * Note that none of the parameters can be null, but the older OASIS ODF
+   * specification v1.0/v1.1 does not name some of the values that the v1.2
+   * specification does. Missing values will, under specific circumstances, be
+   * given assumed defaults (such as the implied use of "SHA1" to start key
+   * strengthening).
+   * </p>
    *
-   * @param encryptionData Originating from a
-   * "manifest:encryption-data" element (inside "manifest:file-entry")
-   * with "manifest:checksum-type", and a Base64-encoded value for the
-   * "manifest:checksum" key. Note that if the checksum and/or the
-   * checksum-type are null, verification of the decryption process
-   * will not be performed, which prevents detection of the wrong
-   * password.
+   * @param encryptionData
+   *          Originating from a "manifest:encryption-data" element (inside
+   *          "manifest:file-entry") with "manifest:checksum-type", and a
+   *          Base64-encoded value for the "manifest:checksum" key. Note that if
+   *          the checksum and/or the checksum-type are null, verification of
+   *          the decryption process will not be performed, which prevents
+   *          detection of the wrong password.
    *
-   * @param keyDerivationData Originating from a
-   * "manifest:key-derivation" element (found inside the XML element
-   * "manifest:encryption-data", see previous) with
-   * "manifest:key-derivation-name", "manifest:key-size",
-   * "manifest:iteration-count, and a Base64-encoded value for the
-   * "manifest:salt".
+   * @param keyDerivationData
+   *          Originating from a "manifest:key-derivation" element (found inside
+   *          the XML element "manifest:encryption-data", see previous) with
+   *          "manifest:key-derivation-name", "manifest:key-size",
+   *          "manifest:iteration-count, and a Base64-encoded value for the
+   *          "manifest:salt".
    *
-   * @param algorithmData Originating from a "manifest:algorithm"
-   * element (found inside the XML element "manifest:encryption-data")
-   * with "manifest:algorithm-name" and a Base64-encoded value for the
-   * "manifest:initialisation-vector".
+   * @param algorithmData
+   *          Originating from a "manifest:algorithm" element (found inside the
+   *          XML element "manifest:encryption-data") with
+   *          "manifest:algorithm-name" and a Base64-encoded value for the
+   *          "manifest:initialisation-vector".
    *
-   * @param startKeyGenerationData Originating from a
-   * "manifest:start-key-generation" element (found inside the XML
-   * element "manifest:encryption-data") with
-   * "manifst:start-key-generation-name", and "manifest:key-size".
+   * @param startKeyGenerationData
+   *          Originating from a "manifest:start-key-generation" element (found
+   *          inside the XML element "manifest:encryption-data") with
+   *          "manifst:start-key-generation-name", and "manifest:key-size".
    *
-   * @throws NoSuchAlgorithmException The indicated encryption
-   * algorithm is not supported.
+   * @throws NoSuchAlgorithmException
+   *           The indicated encryption algorithm is not supported.
    *
-   * @throws NoSuchPaddingException The indicated algorithm does not
-   * support the requested padding.
+   * @throws NoSuchPaddingException
+   *           The indicated algorithm does not support the requested padding.
    **/
   public Crypto( final Map<String,String> encryptionData,
                  final Map<String,String> keyDerivationData,
                  final Map<String,String> algorithmData,
                  final Map<String,String> startKeyGenerationData )
     throws NoSuchAlgorithmException,
-           NoSuchPaddingException
+      NoSuchPaddingException
   {
     super();
 
-    this.checksumType  = encryptionData.get( "manifest:checksum-type" );
-    this.checksum      = toByteArray( encryptionData.get("manifest:checksum") );
+    this.checksumType = encryptionData.get( "manifest:checksum-type" );
+    this.checksum = toByteArray( encryptionData.get( "manifest:checksum" ) );
 
     this.algorithmName = algorithmData.get( "manifest:algorithm-name" );
-    this.initVector    = toByteArray( algorithmData.get("manifest:initialisation-vector") );
+    this.initVector = toByteArray( algorithmData.get( "manifest:initialisation-vector" ) );
 
-
-    this.keyDerivName  = keyDerivationData.get( "manifest:key-derivation-name" );
-    if( keyDerivationData.get("manifest:key-size") == null )
+    this.keyDerivName = keyDerivationData.get( "manifest:key-derivation-name" );
+    if( keyDerivationData.get( "manifest:key-size" ) == null )
       {
-        this.keyDerivSize  = 16;
+        this.keyDerivSize = 16;
       }
     else
       {
-        this.keyDerivSize  = toInt( keyDerivationData.get("manifest:key-size") );
+        this.keyDerivSize = toInt( keyDerivationData.get( "manifest:key-size" ) );
       }
-    this.keyDerivIter  = toInt( keyDerivationData.get("manifest:iteration-count") );
-    this.salt          = toByteArray( keyDerivationData.get("manifest:salt") );
+    this.keyDerivIter = toInt( keyDerivationData.get( "manifest:iteration-count" ) );
+    this.salt = toByteArray( keyDerivationData.get( "manifest:salt" ) );
 
     if( startKeyGenerationData == null )
       {
-        this.startKeyGen   = "SHA1";
-        this.startKeySize  = 20;
+        this.startKeyGen = "SHA1";
+        this.startKeySize = 20;
       }
     else
       {
-        this.startKeyGen   = startKeyGenerationData.get( "manifest:start-key-generation-name" );
-        this.startKeySize  = toInt( startKeyGenerationData.get("manifest:key-size") );
+        this.startKeyGen = startKeyGenerationData.get( "manifest:start-key-generation-name" );
+        this.startKeySize = toInt( startKeyGenerationData.get( "manifest:key-size" ) );
       }
+
+    this.keyDerivationID = keyDerivNameToID( keyDerivName );
 
     init();
   }
 
+
   /**
-   * <p>Constructs a Crypto object using direct parameters that have
-   * been somewhat pre-processed (compared to the {@linkplain
-   * #Crypto(Map,Map,Map,Map) other constructor}).</p>
+   * <p>
+   * Constructs a Crypto object using direct parameters that have been somewhat
+   * pre-processed (compared to the {@linkplain #Crypto(Map,Map,Map,Map) other
+   * constructor}).
+   * </p>
    *
-   * <p>All parameter values are given in essentially the form found
-   * in the OASIS Open Document Format v1.2 container's
-   * META-INF/manifest.xml file (with Base64-encoded binary values
-   * pre-transformed into their original binary, and numeric values
-   * pre-parsed into actual integers).</p>
+   * <p>
+   * All parameter values are given in essentially the form found in the OASIS
+   * Open Document Format v1.2 container's META-INF/manifest.xml file (with
+   * Base64-encoded binary values pre-transformed into their original binary,
+   * and numeric values pre-parsed into actual integers).
+   * </p>
    *
-   * @param checksumType The name of the checksum algorithm. The
-   * checksum is usually an SHA variant covering the first 1024 (1K)
-   * bytes of the encrypted document. If checksum matches then the
-   * correct key/password were supplied; with the wrong key/password
-   * the result would be garbage. Note that if the checksumType is
-   * null, verification of the decryption process will not be
-   * possible.
+   * @param checksumType
+   *          The name of the checksum algorithm. The checksum is usually an SHA
+   *          variant covering the first 1024 (1K) bytes of the encrypted
+   *          document. If checksum matches then the correct key/password were
+   *          supplied; with the wrong key/password the result would be garbage.
+   *          Note that if the checksumType is null, verification of the
+   *          decryption process will not be possible.
    *
-   * @param checksum The checksum bytes as produced by a {@link
-   * MessageDigest}. Note that if the checksum is null, verification
-   * of the decryption process will not be possible.
+   * @param checksum
+   *          The checksum bytes as produced by a {@link MessageDigest}. Note
+   *          that if the checksum is null, verification of the decryption
+   *          process will not be possible.
    *
-   * @param algorithmName The algorithm to be used for decryption.  In
-   * the v1.0/v1.1 specification this was 128-bit "Blowfish&nbsp;CFB"
-   * but in the v1.2 specification this has changed to a URL-based
-   * name that references the 256-bit AES algorithm with CBC. As a
-   * convenience the given name will be transformed, if recognized as
-   * one used by the OASIS ODF specification, to one that maps to the
-   * Java Crypto libraries, but you may provide them directly as
-   * "Blowfish/CFB/NoPadding" or "AES/CBC/NoPadding", or any other
-   * form that may be needed to support future changes to the ODF
-   * specification.
+   * @param algorithmName
+   *          The algorithm to be used for decryption. In the v1.0/v1.1
+   *          specification this was 128-bit "Blowfish&nbsp;CFB" but in the v1.2
+   *          specification this has changed to a URL-based name that references
+   *          the 256-bit AES algorithm with CBC. As a convenience the given
+   *          name will be transformed, if recognized as one used by the OASIS
+   *          ODF specification, to one that maps to the Java Crypto libraries,
+   *          but you may provide them directly as "Blowfish/CFB/NoPadding" or
+   *          "AES/CBC/NoPadding", or any other form that may be needed to
+   *          support future changes to the ODF specification.
    *
-   * @param initVector The encryption algorithm's Initialisation
-   * Vector. Its purpose is to pre-seed the encryption algorithm to
-   * increase dramatically the size of pre-computed attack
-   * dictionaries.
+   * @param initVector
+   *          The encryption algorithm's Initialisation Vector. Its purpose is
+   *          to pre-seed the encryption algorithm to increase dramatically the
+   *          size of pre-computed attack dictionaries.
    *
-   * @param keyDerivationAlgorithmName The name of the encryption key
-   * derivation algorithm. At this time it is "PBKDF2" ("Password
-   * Based Key Derivation Function v2"), whose purpose is to munge a
-   * cryptographically rather weak human-readable password in such a
-   * way that the final result is not merely limited to about 40 or 50
-   * common symbols (letters, digits, and a few specials) but forms a
-   * good spread across binary characters not even found on keyboards.
-   * The algorithm "strengthens" a password to limit the effectiveness
-   * of pattern detections in the encrypted data. PBKDF2, for example,
-   * uses a certain number of iterations of SHA-1. The actual value
-   * that "PBKDF2" actually translates to is "PBKDF2WithHmacSHA1" and
-   * you could supply that full name (or another as appropriate)
-   * directly.
+   * @param keyDerivationAlgorithmName
+   *          The name of the encryption key derivation algorithm. At this time
+   *          it is "PBKDF2" ("Password Based Key Derivation Function v2"),
+   *          whose purpose is to munge a cryptographically rather weak
+   *          human-readable password in such a way that the final result is not
+   *          merely limited to about 40 or 50 common symbols (letters, digits,
+   *          and a few specials) but forms a good spread across binary
+   *          characters not even found on keyboards. The algorithm
+   *          "strengthens" a password to limit the effectiveness of pattern
+   *          detections in the encrypted data. PBKDF2, for example, uses a
+   *          certain number of iterations of SHA-1. The actual value that
+   *          "PBKDF2" actually translates to is "PBKDF2WithHmacSHA1" and you
+   *          could supply that full name (or another as appropriate) directly.
    *
-   * @param keyDerivationSize The size (in bytes) of the derived key.
+   * @param keyDerivationSize
+   *          The size (in bytes) of the derived key.
    *
-   * @param keyDerivationIterationCount How many times the password
-   * based key derivation algorithms (such as PBKDF2) should iterate.
+   * @param keyDerivationIterationCount
+   *          How many times the password based key derivation algorithms (such
+   *          as PBKDF2) should iterate.
    *
-   * @param salt The salt is used to pre-seed the cryptographic key
-   * data to reduce dictionary-based attacks on the key itself.
+   * @param salt
+   *          The salt is used to pre-seed the cryptographic key data to reduce
+   *          dictionary-based attacks on the key itself.
    *
-   * @param startKeyGenerationName The algorithm used to pre-munge the
-   * password before it is given to the password based key
-   * strengthening algorithm (such as PBKDF2). This tends to be SHA-1
-   * or SHA-256, but any other digest-based algorithm could serve this
-   * purpose, at least in theory.
+   * @param startKeyGenerationName
+   *          The algorithm used to pre-munge the password before it is given to
+   *          the password based key strengthening algorithm (such as PBKDF2).
+   *          This tends to be SHA-1 or SHA-256, but any other digest-based
+   *          algorithm could serve this purpose, at least in theory.
    *
-   * @param startKeySize The size of the initial key; this value is
-   * not used directly but should reflect the size of the digest
-   * produced by the algorithm given by the 'startKeyGenerationName'
-   * parameter.
+   * @param startKeySize
+   *          The size of the initial key; this value is not used directly but
+   *          should reflect the size of the digest produced by the algorithm
+   *          given by the 'startKeyGenerationName' parameter.
    *
-   * @throws NoSuchAlgorithmException The indicated encryption
-   * algorithm is not supported.
+   * @throws NoSuchAlgorithmException
+   *           The indicated encryption algorithm is not supported.
    *
-   * @throws NoSuchPaddingException The indicated algorithm does not
-   * support the requested padding.
+   * @throws NoSuchPaddingException
+   *           The indicated algorithm does not support the requested padding.
    **/
   public Crypto( final String checksumType,
                  final byte[] checksum,
@@ -255,148 +270,174 @@ public class Crypto
                  final String startKeyGenerationName,
                  final int startKeySize )
     throws NoSuchAlgorithmException,
-           NoSuchPaddingException
+      NoSuchPaddingException
   {
     super();
 
-    this.checksumType  = checksumType;
-    this.checksum      = Arrays.copyOf(checksum,checksum.length);
+    this.checksumType = checksumType;
+    this.checksum = Arrays.copyOf( checksum,
+                                   checksum.length );
 
     this.algorithmName = algorithmName;
-    this.initVector    = Arrays.copyOf(initVector,initVector.length);
+    this.initVector = Arrays.copyOf( initVector,
+                                     initVector.length );
 
-    this.keyDerivName  = keyDerivationAlgorithmName;
-    this.keyDerivSize  = keyDerivationSize;
-    this.keyDerivIter  = keyDerivationIterationCount;
-    this.salt          = Arrays.copyOf(salt,salt.length);
+    this.keyDerivName = keyDerivationAlgorithmName;
+    this.keyDerivSize = keyDerivationSize;
+    this.keyDerivIter = keyDerivationIterationCount;
+    this.salt = Arrays.copyOf( salt,
+                               salt.length );
 
-    this.startKeyGen   = startKeyGenerationName;
-    this.startKeySize  = startKeySize;
+    this.startKeyGen = startKeyGenerationName;
+    this.startKeySize = startKeySize;
+
+    this.keyDerivationID = keyDerivNameToID( keyDerivName );
 
     init();
   }
+
 
   // ======================================================================
   // Public Methods
   // ======================================================================
 
   /**
-   * <p>Encrypts the given plain text (the stuff you want to hide)
-   * using a String-based password (likely entered by a human) which
-   * is first strengthened to build a real cryptographic key.</p>
+   * <p>
+   * Encrypts the given plain text (the stuff you want to hide) using a
+   * String-based password (likely entered by a human) which is first
+   * strengthened to build a real cryptographic key.
+   * </p>
    *
-   * @param plainText The data that is to be encrypted; even though it
-   * is referred to as plain <em>text</em> it is not necessarily mere
-   * text, but can be any kind of (binary) data (like audio, pictures,
-   * video, etc.) If this is intended to represent readable text, be
-   * sure to use a reliable encoding, such as UTF-8 to produce the
-   * plainText data.
+   * @param plainText
+   *          The data that is to be encrypted; even though it is referred to as
+   *          plain <em>text</em> it is not necessarily mere text, but can be
+   *          any kind of (binary) data (like audio, pictures, video, etc.) If
+   *          this is intended to represent readable text, be sure to use a
+   *          reliable encoding, such as UTF-8 to produce the plainText data.
    *
-   * @param password The password to serve as a basis for the
-   * cryptographic key. This is strengthened first because plain text
-   * rarely makes for good cryptographic text.
+   * @param password
+   *          The password to serve as a basis for the cryptographic key. This
+   *          is strengthened first because plain text rarely makes for good
+   *          cryptographic text.
    *
-   * @return The cipher text (despite the word <em>text</em> this is
-   * binary data). Passing this to {@link #decrypt(byte[],String)}
-   * with the same password should reproduce the original data.
+   * @return The cipher text (despite the word <em>text</em> this is binary
+   *         data). Passing this to {@link #decrypt(byte[],String)} with the
+   *         same password should reproduce the original data.
    *
    * @see #encrypt(byte[],Key)
    **/
   public byte[] encrypt( final byte[] plainText,
                          final String password )
     throws InvalidKeyException,
-           InvalidKeySpecException,
-           InvalidAlgorithmParameterException,
-           IllegalBlockSizeException,
-           BadPaddingException,
-           NoSuchAlgorithmException,
-           UnsupportedEncodingException
+      InvalidAlgorithmParameterException,
+      IllegalBlockSizeException,
+      BadPaddingException,
+      NoSuchAlgorithmException,
+      UnsupportedEncodingException
   {
     final Key key = makeKey( password );
-    return encrypt( plainText, key );
+    return encrypt( plainText,
+                    key );
   }
 
+
   /**
-   * <p>Encrypts the given plain text (the stuff you want to hide)
-   * using a given cryptographic key.</p>
+   * <p>
+   * Encrypts the given plain text (the stuff you want to hide) using a given
+   * cryptographic key.
+   * </p>
    *
-   * @param plainText The data that is to be encrypted; even though it
-   * is referred to as plain <em>text</em> it is not necessarily mere
-   * text, but can be any kind of (binary) data (like audio, pictures,
-   * video, etc.) If this is intended to represent readable text, be
-   * sure to use a reliable encoding, such as UTF-8 to produce the
-   * plainText data.
+   * @param plainText
+   *          The data that is to be encrypted; even though it is referred to as
+   *          plain <em>text</em> it is not necessarily mere text, but can be
+   *          any kind of (binary) data (like audio, pictures, video, etc.) If
+   *          this is intended to represent readable text, be sure to use a
+   *          reliable encoding, such as UTF-8 to produce the plainText data.
    *
-   * @param key The cryptographic key to be used.
+   * @param key
+   *          The cryptographic key to be used.
    *
-   * @return The cipher text (despite the word <em>text</em> this is
-   * binary data). Passing this to {@link #decrypt(byte[],String)}
-   * with the same password should reproduce the original data.
+   * @return The cipher text (despite the word <em>text</em> this is binary
+   *         data). Passing this to {@link #decrypt(byte[],String)} with the
+   *         same password should reproduce the original data.
    *
    * @see #encrypt(byte[],String)
    **/
   public byte[] encrypt( final byte[] plainText,
                          final Key key )
     throws InvalidKeyException,
-           InvalidAlgorithmParameterException,
-           IllegalBlockSizeException,
-           BadPaddingException
+      InvalidAlgorithmParameterException,
+      IllegalBlockSizeException,
+      BadPaddingException
   {
     final IvParameterSpec iv = new IvParameterSpec( initVector );
-    cipher.init( Cipher.ENCRYPT_MODE, key, iv );
+    cipher.init( Cipher.ENCRYPT_MODE,
+                 key,
+                 iv );
     return cipher.doFinal( plainText );
   }
 
+
   /**
-   * <p>Decrypts the given cipher text using a String-based password
-   * (likely entered by a human) which is first strengthened to build
-   * a real cryptographic key.</p>
+   * <p>
+   * Decrypts the given cipher text using a String-based password (likely
+   * entered by a human) which is first strengthened to build a real
+   * cryptographic key.
+   * </p>
    *
-   * @param cipherText The encrypted data (despite the word
-   * <em>text</em> this is binary data).
+   * @param cipherText
+   *          The encrypted data (despite the word <em>text</em> this is binary
+   *          data).
    *
-   * @param password The password to serve as a basis for the
-   * cryptographic key. This is strengthened first because plain text
-   * rarely makes for good cryptographic text.
+   * @param password
+   *          The password to serve as a basis for the cryptographic key. This
+   *          is strengthened first because plain text rarely makes for good
+   *          cryptographic text.
    *
-   * @return The plain text (despite the word <em>text</em> this may
-   * well be binary data) representing the original data.
+   * @return The plain text (despite the word <em>text</em> this may well be
+   *         binary data) representing the original data.
    *
    * @see #decrypt(byte[],Key)
    **/
   public byte[] decrypt( final byte[] cipherText,
                          final String password )
     throws InvalidKeyException,
-           InvalidKeySpecException,
-           InvalidAlgorithmParameterException,
-           IllegalBlockSizeException,
-           BadPaddingException,
-           NoSuchAlgorithmException,
-           UnsupportedEncodingException
+      InvalidAlgorithmParameterException,
+      IllegalBlockSizeException,
+      BadPaddingException,
+      NoSuchAlgorithmException,
+      UnsupportedEncodingException
   {
-    return decrypt( cipherText, password, true );
+    return decrypt( cipherText,
+                    password,
+                    true );
   }
 
+
   /**
-   * <p>Decrypts the given cipher text using a String-based password
-   * (likely entered by a human) which is first strengthened to build
-   * a real cryptographic key; and verifying the decrypted result
-   * against the available checksum.</p>
+   * <p>
+   * Decrypts the given cipher text using a String-based password (likely
+   * entered by a human) which is first strengthened to build a real
+   * cryptographic key; and verifying the decrypted result against the available
+   * checksum.
+   * </p>
    *
-   * @param cipherText The encrypted data (despite the word
-   * <em>text</em> this is binary data).
+   * @param cipherText
+   *          The encrypted data (despite the word <em>text</em> this is binary
+   *          data).
    *
-   * @param password The password to serve as a basis for the
-   * cryptographic key. This is strengthened first because plain text
-   * rarely makes for good cryptographic text.
+   * @param password
+   *          The password to serve as a basis for the cryptographic key. This
+   *          is strengthened first because plain text rarely makes for good
+   *          cryptographic text.
    *
-   * @param verify Indicate whether the checksum (if available) is to
-   * be used to verify the validity of the decrypted data; if the
-   * checksum verification fails, an IllegalArgumentException will be
-   * thrown.
+   * @param verify
+   *          Indicate whether the checksum (if available) is to be used to
+   *          verify the validity of the decrypted data; if the checksum
+   *          verification fails, an IllegalArgumentException will be thrown.
    *
-   * @return The plain text (despite the word <em>text</em> this may
-   * well be binary data) representing the original data.
+   * @return The plain text (despite the word <em>text</em> this may well be
+   *         binary data) representing the original data.
    *
    * @see #decrypt(byte[],Key)
    **/
@@ -404,69 +445,82 @@ public class Crypto
                          final String password,
                          final boolean verify )
     throws InvalidKeyException,
-           InvalidKeySpecException,
-           InvalidAlgorithmParameterException,
-           IllegalBlockSizeException,
-           BadPaddingException,
-           NoSuchAlgorithmException,
-           UnsupportedEncodingException
+      InvalidAlgorithmParameterException,
+      IllegalBlockSizeException,
+      BadPaddingException,
+      NoSuchAlgorithmException,
+      UnsupportedEncodingException
   {
     final Key key = makeKey( password );
-    return decrypt( cipherText, key, verify );
+    return decrypt( cipherText,
+                    key,
+                    verify );
   }
 
+
   /**
-   * <p>Decrypts the given cipher text using a given cryptographic
-   * key.</p>
+   * <p>
+   * Decrypts the given cipher text using a given cryptographic key.
+   * </p>
    *
-   * @param cipherText The encrypted data (despite the word
-   * <em>text</em> this is binary data).
+   * @param cipherText
+   *          The encrypted data (despite the word <em>text</em> this is binary
+   *          data).
    *
-   * @param key The cryptographic key to be used.
+   * @param key
+   *          The cryptographic key to be used.
    *
-   * @return The plain text (despite the word <em>text</em> this may
-   * well be binary data) representing the original data.
+   * @return The plain text (despite the word <em>text</em> this may well be
+   *         binary data) representing the original data.
    *
-   * @throws IllegalArgumentException The given key has failed to
-   * decrypt the cipherText (the checksum has failed).
+   * @throws IllegalArgumentException
+   *           The given key has failed to decrypt the cipherText (the checksum
+   *           has failed).
    *
    * @see #decrypt(byte[],Key,boolean)
    **/
   public byte[] decrypt( final byte[] cipherText,
                          final Key key )
     throws InvalidKeyException,
-           InvalidKeySpecException,
-           InvalidAlgorithmParameterException,
-           IllegalBlockSizeException,
-           BadPaddingException,
-           NoSuchAlgorithmException,
-           UnsupportedEncodingException
+      InvalidAlgorithmParameterException,
+      IllegalBlockSizeException,
+      BadPaddingException,
+      NoSuchAlgorithmException
   {
-    return decrypt( cipherText, key, true );
+    return decrypt( cipherText,
+                    key,
+                    true );
   }
 
+
   /**
-   * <p>Decrypts the given cipher text using a given cryptographic
-   * key, optionally verifying the decrypted result against the
-   * available checksum.</p>
+   * <p>
+   * Decrypts the given cipher text using a given cryptographic key, optionally
+   * verifying the decrypted result against the available checksum.
+   * </p>
    *
-   * @param cipherText The encrypted data (despite the word
-   * <em>text</em> this is binary data).
+   * @param cipherText
+   *          The encrypted data (despite the word <em>text</em> this is binary
+   *          data).
    *
-   * @param key The cryptographic key to be used.
+   * @param key
+   *          The cryptographic key to be used.
    *
-   * @param verify Indicate whether the checksum (if available) is to
-   * be used to verify the validity of the decrypted data; if the
-   * checksum verification fails, an IllegalArgumentException will be
-   * thrown.
+   * @param verify
+   *          Indicate whether the checksum (if available) is to be used to
+   *          verify the validity of the decrypted data; if the checksum
+   *          verification fails, an IllegalArgumentException will be thrown.
    *
-   * @return The plain text (despite the word <em>text</em> this may
-   * well be binary data) representing the original data.
+   * @return The plain text (despite the word <em>text</em> this may well be
+   *         binary data) representing the original data.
    *
-   * @throws IllegalArgumentException The given key has failed to
-   * decrypt the cipherText (the checksum has failed); this is not
-   * thrown if verification is disabled at hand of the 'verify'
-   * parameter.
+   * @throws IllegalArgumentException
+   *           The given key has failed to decrypt the cipherText (the checksum
+   *           has failed); this is not thrown if verification is disabled at
+   *           hand of the 'verify' parameter.
+   *
+   * @throws NoSuchAlgorithmException
+   *           The data failed the {@link #verify(byte[])} checksum.
    *
    * @see #decrypt(byte[],Key,boolean)
    **/
@@ -474,35 +528,54 @@ public class Crypto
                          final Key key,
                          final boolean verify )
     throws InvalidKeyException,
-           InvalidAlgorithmParameterException,
-           IllegalBlockSizeException,
-           BadPaddingException,
-           NoSuchAlgorithmException
+      InvalidAlgorithmParameterException,
+      IllegalBlockSizeException,
+      BadPaddingException,
+      NoSuchAlgorithmException
   {
     final IvParameterSpec iv = new IvParameterSpec( initVector );
-    cipher.init( Cipher.DECRYPT_MODE, key, iv );
+    cipher.init( Cipher.DECRYPT_MODE,
+                 key,
+                 iv );
     final byte[] plainText = cipher.doFinal( cipherText );
     return (verify
-            ? verify(plainText)
-            : plainText);
+        ? verify( plainText )
+        : plainText);
   }
 
+
+  /**
+   * Verify the given data against the checksum. An exception is thrown if the
+   * verification fails.
+   *
+   * @param result
+   *          The data to be verified.
+   * @return The same data given (implicitly verified to have matched the
+   *         checksum)
+   * @throws NoSuchAlgorithmException
+   *           The given data failed the checksum.
+   */
   public byte[] verify( final byte[] result )
     throws NoSuchAlgorithmException
   {
-    if( (checksumType != null) &&
-        (checksum != null) )
+    if( (checksumType != null) && (checksum != null) )
       {
         final MessageDigest digest;
-        if( "SHA1/1K".equals(checksumType) )
+        if( "SHA1/1K".equals( checksumType ) )
           {
             digest = MessageDigest.getInstance( "SHA1" );
-            digest.update( result, 0, Math.min(1024,result.length) );
+            digest.update( result,
+                           0,
+                           Math.min( 1024,
+                                     result.length ) );
           }
-        else if( "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k".equals(checksumType) )
+        else if( "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k".equals( checksumType ) )
           {
             digest = MessageDigest.getInstance( "SHA-256" );
-            digest.update( result, 0, Math.min(1024,result.length) );
+            digest.update( result,
+                           0,
+                           Math.min( 1024,
+                                     result.length ) );
           }
         else
           {
@@ -512,89 +585,102 @@ public class Crypto
           }
 
         final byte[] test = digest.digest();
-        for( int i=0; i<checksum.length; i++ )
+        for( int i = 0; i < checksum.length; i++ )
           {
             if( test[i] != checksum[i] )
               {
                 if( SPECIAL_IGNORE_BAD_CHECKSUMS &&
-                    algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes256-cbc") &&
-                    checksumType.equals("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k") )
+                    algorithmName.equals( "http://www.w3.org/2001/04/xmlenc#aes256-cbc" ) &&
+                    checksumType.equals( "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#sha256-1k" ) )
                   {
-                    System.err.println( "\t\tBAD CHECKSUM   = "+toHex(test) );
+                    System.err.println( "\t\tBAD CHECKSUM   = " + toHex( test ) );
                   }
-                throw new IllegalArgumentException( "Checksum mismatch "+
-                                                    "(wrong key/password?): "+
-                                                    checksumType );
+                throw new IllegalArgumentException( "Checksum mismatch " + "(wrong key/password?): " + checksumType );
               }
           }
       }
     return result;
   }
 
+
+  /**
+   * For debugging only: Dumps information about cryptographic parameters to
+   * stderr.
+   */
   public void showInfo()
   {
-    System.err.println( "\t\tChecksumType   = "+checksumType );
-    System.err.println( "\t\tChecksum       = "+toHex(checksum) );
-    System.err.println( "\t\tAlgorithm      = "+algorithmName );
-    System.err.println( "\t\tInitVector     = "+toHex(initVector) );
-    System.err.println( "\t\tKeyDrivation   = "+keyDerivName );
-    System.err.println( "\t\tKeyDerivSize   = "+keyDerivSize );
-    System.err.println( "\t\tKeyDerivIter   = "+keyDerivIter );
-    System.err.println( "\t\tSalt           = "+toHex(salt) );
-    System.err.println( "\t\tKeyStart       = "+startKeyGen );
-    System.err.println( "\t\tKeyStartSize   = "+startKeySize );
+    System.err.println( "\t\tChecksumType   = " + checksumType );
+    System.err.println( "\t\tChecksum       = " + toHex( checksum ) );
+    System.err.println( "\t\tAlgorithm      = " + algorithmName );
+    System.err.println( "\t\tInitVector     = " + toHex( initVector ) );
+    System.err.println( "\t\tKeyDrivation   = " + keyDerivName );
+    System.err.println( "\t\tKeyDerivSize   = " + keyDerivSize );
+    System.err.println( "\t\tKeyDerivIter   = " + keyDerivIter );
+    System.err.println( "\t\tSalt           = " + toHex( salt ) );
+    System.err.println( "\t\tKeyStart       = " + startKeyGen );
+    System.err.println( "\t\tKeyStartSize   = " + startKeySize );
   }
 
+
+  /**
+   * Used by {@link #showInfo} to produce human-readable hexadecimal output for
+   * certain binary data.
+   *
+   * @param data
+   *          The binary data to be made human readable.
+   * @return The human readable (hexadecimal) representation of the input.
+   */
   private String toHex( final byte[] data )
   {
     final StringBuilder sb = new StringBuilder();
-    for( int i=0; i<data.length; i++ )
+    for( int i = 0; i < data.length; i++ )
       {
-        if( (i > 0) &&
-            (i % 4 == 0) )
+        if( (i > 0) && (i % 4 == 0) )
           {
             sb.append( " " );
           }
-        sb.append( String.format("%02x",data[i]) );
+        sb.append( String.format( "%02x",
+                                  data[i] ) );
       }
     return sb.toString();
   }
 
+
   /**
-   * <p>Strengthens the given password using an algorithm designed for
-   * this purpose. A popular algorithm is often referred to as
-   * "PBKDF2" (Password Based Key Derivation Function v2) which is
-   * identified in the Java Crypto libraries as
-   * "PBKDF2WithHmacSHA1".</p>
+   * <p>
+   * Strengthens the given password using an algorithm designed for this
+   * purpose. A popular algorithm is often referred to as "PBKDF2" (Password
+   * Based Key Derivation Function v2) which is identified in the Java Crypto
+   * libraries as "PBKDF2WithHmacSHA1".
+   * </p>
    *
-   * <p>The idea of strengthening a password is based on the fact that
-   * passwords (or pass phrases) make lousy cryptographic keys, not
-   * just because they can be far too short, but the total possible
-   * spread of symbols employed in each character of a password falls
-   * far short of the 256 possibilities embodied in a byte. Password
-   * strenghtening like PBKDF2 rely on message digests to generate a
-   * digital hash from the password. Running this same algorithm
-   * through a number of iterations (like 1024 times) will not just
-   * obfuscate the original password, but virtually ensure that the
-   * resulting data appears like thoroughly random binary (it's not,
-   * but is probably far more suitable for cryptography than the
-   * original plain old password).
+   * <p>
+   * The idea of strengthening a password is based on the fact that passwords
+   * (or pass phrases) make lousy cryptographic keys, not just because they can
+   * be far too short, but the total possible spread of symbols employed in each
+   * character of a password falls far short of the 256 possibilities embodied
+   * in a byte. Password strengthening algorithms like PBKDF2 rely on message
+   * digests to generate a digital hash from the password. Running this same
+   * algorithm through a number of iterations (like 1024 times) will not just
+   * obfuscate the original password, but virtually ensure that the resulting
+   * data appears like thoroughly random binary (it's not random, but is far
+   * better suited for cryptography than the original plain old password).
+   * </p>
    *
-   * @param password The password, which can be any length. Of couse,
-   * the longer it is, the more reasonably secure the resulting key
-   * will be.
+   * @param password
+   *          The password, which can be any length. Of course, the longer it
+   *          is, the more reasonably secure the resulting key will be.
    *
-   * @return The cryptographic (secret) key derived from the password
-   * after the password has been strengthened.
+   * @return The cryptographic (secret) key derived from the password after the
+   *         password has been strengthened.
    **/
   public Key makeKey( final String password )
     throws InvalidKeyException,
-           InvalidKeySpecException,
-           NoSuchAlgorithmException,
-           UnsupportedEncodingException
+      NoSuchAlgorithmException,
+      UnsupportedEncodingException
   {
     final byte[] sha;
-    if( "http://www.w3.org/2000/09/xmldsig#sha256".equals(startKeyGen) )
+    if( "http://www.w3.org/2000/09/xmldsig#sha256".equals( startKeyGen ) )
       {
         sha = toSHA256( password );
       }
@@ -602,88 +688,89 @@ public class Crypto
       {
         sha = toSHA1( password );
       }
-    final byte[] derivedKey = PBKDF2.deriveKey( sha,
-                                                salt,
-                                                keyDerivIter,
-                                                keyDerivSize );
-    return new SecretKeySpec( derivedKey,
-                              keyAlgorithm );
+
+    if( PBKDF2_ALGORITHM_NAME.equals( keyDerivationID ) )
+      {
+        final byte[] derivedKey = PBKDF2.deriveKey( sha,
+                                                    salt,
+                                                    keyDerivIter,
+                                                    keyDerivSize );
+        return new SecretKeySpec( derivedKey,
+                                  keyAlgorithm );
+      }
+    throw new NoSuchAlgorithmException( "Only supports key derivation algorithm PBKDF2 (" +
+                                        PBKDF2_ALGORITHM_NAME +
+                                        ") for now." );
   }
+
 
   // ======================================================================
   // Private Methods
   // ======================================================================
 
   /**
-   * <p>Translates initial parameters (set in the constructors) so
-   * that identifiers like "PBKDF2" becomes "PBKDF2WithHmacSHA1", and
-   * "Blowfish&nbsp;CFB" becomes "Blowfish/CFB/NoPadding"; this allows
-   * for identifiers from the OASIS ODF container's manifest to be
-   * used directly, without the caller being required to perform this
-   * translation.</p>
+   * <p>
+   * Translates initial parameters (set in the constructors) so that identifiers
+   * like "PBKDF2" becomes "PBKDF2WithHmacSHA1", and "Blowfish&nbsp;CFB" becomes
+   * "Blowfish/CFB/NoPadding"; this allows for identifiers from the OASIS ODF
+   * container's manifest to be used directly, without the caller being required
+   * to perform this translation.
+   * </p>
    **/
   private void init()
     throws NoSuchAlgorithmException,
-           NoSuchPaddingException
+      NoSuchPaddingException
   {
     // ----------------------------------------------------------------------
     // Translate the cipher algorithm from the version used by the ODF
     // container to the one recognized by the Java crypto libraries:
     String algorithmID;
-    if( algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes256-cbc") ||
-        algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes192-cbc") ||
-        algorithmName.equals("http://www.w3.org/2001/04/xmlenc#aes128-cbc") )
+    if( algorithmName.equals( "http://www.w3.org/2001/04/xmlenc#aes256-cbc" ) ||
+        algorithmName.equals( "http://www.w3.org/2001/04/xmlenc#aes192-cbc" ) ||
+        algorithmName.equals( "http://www.w3.org/2001/04/xmlenc#aes128-cbc" ) )
       {
-        // Even though we accept three different algorithsm here, the
+        // Even though we accept three different algorithms here, the
         // key size is the distinguishing factor between 256, 192, and
         // 128 bit AES, and that distinction is not made in the
         // 'algorithmID' here
         algorithmID = "AES/CBC/NoPadding";
       }
-    else if( algorithmName.equals("Blowfish CFB") ||
-             algorithmName.equals("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#blowfish") )
+    else if( algorithmName.equals( "Blowfish CFB" ) ||
+             algorithmName.equals( "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0#blowfish" ) )
       {
         algorithmID = "Blowfish/CFB/NoPadding";
       }
-    else // not recognized, unsupported, most likely won't work
+    else
+      // not recognized, unsupported, most likely won't work
       {
         algorithmID = algorithmName;
       }
     this.cipher = Cipher.getInstance( algorithmID );
 
     // ----------------------------------------------------------------------
-    // Translate the public key derivation algorithm from the version
-    // used by the ODF container to version recognized by the Java
-    // crypto libraries:
-    String keyDerivationID;
-    if( keyDerivName.equals("PBKDF2") )
-      {
-        keyDerivationID = "PBKDF2WithHmacSHA1";
-      }
-    else // not recognized, unsupported, most likely won't work
-      {
-        keyDerivationID = keyDerivName;
-      }
-
-    // ----------------------------------------------------------------------
     // A cipher specification is either "Name" or "Name/Mode/Padding",
     // so we'll look for the first '/' symbol and, if present, take
     // the name that precedes it or the whole thing if there is no '/'
     // for the name of the secret key algorithm:
-    final int slashPos = algorithmID.indexOf('/');
+    final int slashPos = algorithmID.indexOf( '/' );
     this.keyAlgorithm = (slashPos < 0
-                         ? algorithmID
-                         : algorithmID.substring(0,slashPos));
+        ? algorithmID
+        : algorithmID.substring( 0,
+                                 slashPos ));
   }
+
 
   public String getChecksumType()
   {
     return checksumType;
   }
+
+
   public String getAlgorithmName()
   {
     return algorithmName;
   }
+
 
   /**
    * Parses Base64-encoded data back into its binary form.
@@ -692,6 +779,8 @@ public class Crypto
   {
     return Base64.decode( base64Data.getBytes() );
   }
+
+
   /**
    * Parses a textual representation of a number into an integer.
    **/
@@ -699,26 +788,30 @@ public class Crypto
   {
     return Integer.valueOf( text );
   }
+
+
   /**
-   * Translates the given password into a UTF8-based set of bytes,
-   * then produces from these the digest bytes based on SHA-256.
+   * Translates the given password into a UTF8-based set of bytes, then produces
+   * from these the digest bytes based on SHA-256.
    **/
   private static byte[] toSHA256( final String password )
     throws NoSuchAlgorithmException,
-           UnsupportedEncodingException
+      UnsupportedEncodingException
   {
     final byte[] passwordCharacters = password.getBytes( "UTF-8" );
 
     final MessageDigest sha256Digester = MessageDigest.getInstance( "SHA-256" );
     return sha256Digester.digest( passwordCharacters );
   }
+
+
   /**
-   * Translates the given password into a UTF8-based set of bytes,
-   * then produces from these the digest bytes based on SHA-1.
+   * Translates the given password into a UTF8-based set of bytes, then produces
+   * from these the digest bytes based on SHA-1.
    **/
   private static byte[] toSHA1( final String password )
     throws NoSuchAlgorithmException,
-           UnsupportedEncodingException
+      UnsupportedEncodingException
   {
     final byte[] passwordCharacters = password.getBytes( "UTF-8" );
 
@@ -726,9 +819,25 @@ public class Crypto
     return sha1Digester.digest( passwordCharacters );
   }
 
+
+  private static String keyDerivNameToID( final String keyDerivName )
+  {
+    // ----------------------------------------------------------------------
+    // Translate the public key derivation algorithm from the version
+    // used by the ODF container to version recognized by the Java
+    // crypto libraries:
+    if( keyDerivName.equals( "PBKDF2" ) )
+      {
+        return "PBKDF2WithHmacSHA1";
+      }
+    return keyDerivName;
+  }
+
+
+  @Override
   public String toString()
   {
-    return keyAlgorithm+"-"+(keyDerivSize*8);
+    return keyAlgorithm + "-" + (keyDerivSize * 8);
   }
 
   // ======================================================================
@@ -743,10 +852,11 @@ public class Crypto
   private final String algorithmName;
   private final byte[] initVector;
   private final String keyDerivName;
+  private final String keyDerivationID; // keyDerivName => real algorithm
   private final int keyDerivSize;
   private final int keyDerivIter;
   private final byte[] salt;
   private final String startKeyGen;
   private final int startKeySize;
+  private static final String PBKDF2_ALGORITHM_NAME = "PBKDF2WithHmacSHA1";
 }
-
